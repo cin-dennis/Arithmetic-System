@@ -1,12 +1,16 @@
 from fastapi import APIRouter, Query, HTTPException
-from ..core.evaluator import evaluate_expression
+import logging
+from ..services.orchestrator import WorkflowOrchestrator
+from ..models.models import CalculateExpressionResponse
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
+orchestrator = WorkflowOrchestrator()
 
-@router.get("/evaluate")
+@router.get("/evaluate", response_model=CalculateExpressionResponse)
 def evaluate(expression: str = Query(..., description="Arithmetic expression to evaluate")):
     try:
-        result = evaluate_expression(expression)
-        return {"result": result}
+        result = orchestrator.calculate_sync(expression)
+        return CalculateExpressionResponse(**result)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
