@@ -14,35 +14,35 @@ services:
 
   add_worker:
     build: ./arithmetic-system
-    command: celery -A app.celery worker -Q add_tasks --loglevel=info
+    command: celery -A app.services.celery worker -Q add_tasks --loglevel=info
     depends_on:
       - rabbitmq
       - redis
 
   sub_worker:
     build: ./arithmetic-system
-    command: celery -A app.celery worker -Q sub_tasks --loglevel=info
+    command: celery -A app.services.celery worker -Q sub_tasks --loglevel=info
     depends_on:
       - rabbitmq
       - redis
 
   mul_worker:
     build: ./arithmetic-system
-    command: celery -A app.celery worker -Q mul_tasks --loglevel=info
+    command: celery -A app.services.celery worker -Q mul_tasks --loglevel=info
     depends_on:
       - rabbitmq
       - redis
 
   div_worker:
     build: ./arithmetic-system
-    command: celery -A app.celery worker -Q div_tasks --loglevel=info
+    command: celery -A app.services.celery worker -Q div_tasks --loglevel=info
     depends_on:
       - rabbitmq
       - redis
 
   xsum_worker:
     build: ./arithmetic-system
-    command: celery -A app.celery worker -Q add_tasks --loglevel=info
+    command: celery -A app.services.celery worker -Q add_tasks --loglevel=info
     depends_on:
       - rabbitmq
       - redis

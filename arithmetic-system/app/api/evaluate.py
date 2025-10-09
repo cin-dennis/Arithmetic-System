@@ -7,7 +7,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 orchestrator = WorkflowOrchestrator()
 
-@router.get("/evaluate", response_model=CalculateExpressionResponse)
+@router.get("/calculate", response_model=CalculateExpressionResponse)
 def evaluate(expression: str = Query(..., description="Arithmetic expression to evaluate")):
     try:
         result = orchestrator.calculate_sync(expression)
