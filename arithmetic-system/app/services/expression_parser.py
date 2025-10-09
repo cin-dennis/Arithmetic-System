@@ -223,7 +223,6 @@ class ExpressionParser:
         # Default fallback
         return ExpressionType.SEQUENTIAL
 
-    @staticmethod
     def _clean_expression(self, expression: str) -> str:
         # Remove whitespace
         clean = re.sub(r'\s+', '', expression)
@@ -234,7 +233,6 @@ class ExpressionParser:
 
         return clean
 
-    @staticmethod
     def _get_operator_symbol(self, op) -> str:
         op_map = {
             ast.Add: '+',

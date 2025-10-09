@@ -3,13 +3,13 @@ from celery.result import AsyncResult
 from typing import Dict, Any, List, Union, Tuple, Optional
 import logging
 
-from add_service import add as add_task
-from mul_service import multiply as mul_task
-from div_service import divide as div_task
-from sub_service import subtract as sub_task
-from xsum_service import xsum as array_sum_task
+from .add_service import add as add_task
+from .mul_service import multiply as mul_task
+from .div_service import divide as div_task
+from .sub_service import subtract as sub_task
+from .xsum_service import xsum as array_sum_task
 
-from expression_parser import (
+from .expression_parser import (
     ExpressionParser, ParsedExpression, ExpressionType, ExpressionNode
 )
 

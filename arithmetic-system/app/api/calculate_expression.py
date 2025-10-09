@@ -10,6 +10,7 @@ orchestrator = WorkflowOrchestrator()
 @router.get("/calculate", response_model=CalculateExpressionResponse)
 def evaluate(expression: str = Query(..., description="Arithmetic expression to evaluate")):
     try:
+        logger.info(f"Received expression to evaluate: {expression}")
         result = orchestrator.calculate_sync(expression)
         return CalculateExpressionResponse(**result)
     except Exception as e:

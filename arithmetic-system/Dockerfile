@@ -12,5 +12,5 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Set the default command to run the main application
-CMD ["python", "main.py"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
