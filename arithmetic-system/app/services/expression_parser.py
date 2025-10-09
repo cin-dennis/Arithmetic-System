@@ -65,6 +65,8 @@ class ExpressionParser:
 
             tree = ast.parse(clean_expr, mode='eval')
 
+            print("AST:", ast.dump(tree))
+
             expr_tree = self._build_expression_tree(tree.body, level=0)
 
             parallel_groups = self._find_parallel_groups(expr_tree)
@@ -96,7 +98,6 @@ class ExpressionParser:
             left = self._build_expression_tree(node.left, level + 1)
             right = self._build_expression_tree(node.right, level + 1)
 
-            # Detect if this can be parallelized
             is_parallel = self._can_parallelize(left, right, op_symbol)
 
             return ExpressionNode(
@@ -225,13 +226,13 @@ class ExpressionParser:
 
     def _clean_expression(self, expression: str) -> str:
         # Remove whitespace
-        clean = re.sub(r'\s+', '', expression)
+        clean_expression = re.sub(r'\s+', '', expression)
 
         # Validate characters (numbers, operators, parentheses, decimal points)
-        if not re.match(r'^[0-9+\-*/().]+$', clean):
+        if not re.match(r'^[0-9+\-*/().]+$', clean_expression):
             raise ValueError("Expression contains invalid characters")
 
-        return clean
+        return clean_expression
 
     def _get_operator_symbol(self, op) -> str:
         op_map = {

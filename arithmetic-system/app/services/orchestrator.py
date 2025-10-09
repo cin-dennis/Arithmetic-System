@@ -26,7 +26,7 @@ class WorkflowOrchestrator:
             'div': div_task
         }
 
-    def calculate_sync(self, expression: str) -> Dict[str, Any]:
+    def calculate(self, expression: str) -> Dict[str, Any]:
         try:
             parsed = self.parser.parse(expression)
 
@@ -62,31 +62,6 @@ class WorkflowOrchestrator:
             logger.error(f"Error in calculate_sync: {str(e)}")
             raise ValueError(f"Failed to process expression: {str(e)}")
 
-    def _update_optimization_info(self, original_info: Dict[str, Any], parsed: ParsedExpression) -> Dict[str, Any]:
-        """Update optimization info after expression type override"""
-        updated_info = original_info.copy()
-        updated_info["expression_type"] = parsed.expression_type.value
-
-        if parsed.expression_type == ExpressionType.PARALLEL:
-            updated_info["optimization_suggestion"] = "Use chord() pattern for maximum parallelization"
-            # Count actual parallel tasks found
-            parallel_task_count = len(self._extract_parallel_tasks_from_expression(parsed.expression_tree))
-            updated_info["estimated_speedup"] = min(parallel_task_count / 2, 4.0)  # More realistic speedup
-            updated_info[
-                "parallel_groups"] = parallel_task_count if parallel_task_count >= 2 else 0  # Each task is a group
-            updated_info["parallel_tasks_count"] = parallel_task_count  # Add actual task count
-        elif parsed.expression_type == ExpressionType.HYBRID:
-            updated_info["optimization_suggestion"] = "Use mixed chord() and chain() patterns"
-            updated_info["estimated_speedup"] = 1.5
-        elif parsed.expression_type == ExpressionType.SEQUENTIAL:
-            updated_info["optimization_suggestion"] = "Use chain() pattern for dependent operations"
-            updated_info["estimated_speedup"] = 1.0
-        else:
-            updated_info["optimization_suggestion"] = "Simple operation, no optimization needed"
-            updated_info["estimated_speedup"] = 1.0
-
-        return updated_info
-
     def _get_actual_parallel_groups_count(self, parsed: ParsedExpression) -> int:
         if parsed.expression_type == ExpressionType.PARALLEL:
             parallel_tasks = self._extract_parallel_tasks_from_expression(parsed.expression_tree)
@@ -115,7 +90,6 @@ class WorkflowOrchestrator:
 
         return parsed
 
-    @staticmethod
     def _is_purely_additive_expression(self, tree: Union[ExpressionNode, float]) -> bool:
         if not isinstance(tree, ExpressionNode):
             return True
@@ -159,7 +133,6 @@ class WorkflowOrchestrator:
 
         return self._execute_sequential(parsed)
 
-    @staticmethod
     def _extract_final_operation(self, tree: Union[ExpressionNode, float]) -> Tuple[Optional[str], Optional[float]]:
         if not isinstance(tree, ExpressionNode):
             return None, None
@@ -394,20 +367,6 @@ class WorkflowOrchestrator:
 
         return tasks
 
-    def _create_parallel_tasks(self, parsed: ParsedExpression) -> List:
-        tasks = []
-        operations = parsed.operations
-
-        for i in range(0, len(operations), 2):
-            if i < len(operations):
-                op = operations[i]
-                task_func = self.task_map.get(op.operation)
-                if task_func and isinstance(op.operand1, (int, float)) and isinstance(op.operand2, (int, float)):
-                    tasks.append(task_func.s(op.operand1, op.operand2))
-
-        return tasks
-
-    @staticmethod
     def get_result(self, task_id: str) -> Dict[str, Any]:
         try:
             result = AsyncResult(task_id)
