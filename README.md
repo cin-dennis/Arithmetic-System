@@ -9,4 +9,4 @@
 - 1 worker to handle subtract operator.
 - 1 worker to handle multiply operator.
 - 1 worker to handle divide operator.
-- 1 redis instance as a result backend.
+- 1 Redis instance as a result backend.
