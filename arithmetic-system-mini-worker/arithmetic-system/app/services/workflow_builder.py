@@ -1,131 +1,86 @@
-from celery import chain, group, Signature, chord
-from celery.result import EagerResult
-import uuid
-from .combiner_service import combine_and_operate
-from .expression_parser import ExpressionNode, ExpressionType, OperationEnum
+import json
+from typing import Union
+from .expression_parser import ExpressionNode, OperationEnum
 import logging
-from .xsum_service import xsum
-from .xprod_service import xprod
+from mini.worker.workers.canvas import Node, Chain, Chord
+from ..models.worker_models import ArithmeticInput
 
 logger = logging.getLogger(__name__)
 
+OPERATION_TOPIC_MAP = {
+    OperationEnum.ADD: "add_tasks",
+    OperationEnum.SUB: "sub_tasks",
+    OperationEnum.MUL: "mul_tasks",
+    OperationEnum.DIV: "div_tasks",
+}
+AGGREGATOR_TOPIC_MAP = {
+    OperationEnum.ADD: "xsum_tasks",
+    OperationEnum.MUL: "xprod_tasks",
+}
+COMBINER_TOPIC = "chord_combiner_tasks"
 
 class WorkflowBuilder:
     def __init__(self, task_map):
         self.task_map = task_map
 
-    def build(self, node):
-        workflow_or_result = self._build_recursive(node)
+    def build(self, expression_tree: Union[ExpressionNode, float]) -> Union[Node, Chain, Chord, float]:
+        return self._build_recursive(expression_tree)
 
-        if isinstance(workflow_or_result, (int, float)):
-            task_id = str(uuid.uuid4())
-            async_result = EagerResult(task_id, workflow_or_result, 'SUCCESS')
-        elif isinstance(workflow_or_result, Signature):
-            async_result = workflow_or_result.apply_async()
-        else:
-            raise TypeError(f"Build process returned an unexpected type: {type(workflow_or_result)}")
-
-        return async_result
-
-    def _build_recursive(self, node) -> Signature | float:
+    def _build_recursive(self, node: Union[ExpressionNode, float]) -> Union[Node, Chain, Chord, float]:
         if isinstance(node, (int, float)):
             return float(node)
 
         if not isinstance(node, ExpressionNode):
             raise TypeError(f"Invalid node type: {type(node)}")
 
-        is_left_constant = isinstance(node.left, (int, float))
-        is_right_constant = isinstance(node.right, (int, float))
-        if is_left_constant and is_right_constant:
-            op_task = self.task_map[node.operation]
-            return op_task.s(node.left, node.right)
+        left_workflow = self._build_recursive(node.left)
+        right_workflow = self._build_recursive(node.right)
 
-        if node.operation.is_commutative and not is_left_constant and not is_right_constant:
-            return self._build_flat_workflow(node)
-        else:
-            left_op = self._build_recursive(node.left)
-            right_op = self._build_recursive(node.right)
+        left_is_value = isinstance(left_workflow, float)
+        right_is_value = isinstance(right_workflow, float)
 
-            is_left_task = isinstance(left_op, Signature)
-            is_right_task = isinstance(right_op, Signature)
-
-            op_name = node.operation.value
-
-            if not is_left_task and not is_right_task:
-                op_task = self.task_map[node.operation]
-                return op_task.s(left_op, right_op)
-            elif is_left_task and not is_right_task:
-                combiner_sig = combine_and_operate.s(
-                    operation_name=op_name,
-                    fixed_operand=right_op,
-                    is_left_fixed=False
-                )
-                return left_op | combiner_sig
-            elif not is_left_task and is_right_task:
-                combiner_sig = combine_and_operate.s(
-                    operation_name=op_name,
-                    fixed_operand=left_op,
-                    is_left_fixed=True
-                )
-                return right_op | combiner_sig
-            else:
-                parallel_tasks = group(left_op, right_op)
-                return chain(parallel_tasks, combine_and_operate.s(operation_name=op_name))
-
-    def _collect_operands(self, node, operation: OperationEnum):
-        operands = []
-        if isinstance(node, ExpressionNode) and node.operation == operation:
-            operands.extend(self._collect_operands(node.left, operation))
-            operands.extend(self._collect_operands(node.right, operation))
-        else:
-            operands.append(node)
-        return operands
-
-    def _build_flat_workflow(self, node: ExpressionNode) -> Signature | float:
-        all_operands = self._collect_operands(node, node.operation)
-        child_workflows = [self._build_recursive(op) for op in all_operands]
-
-        tasks = [wf for wf in child_workflows if isinstance(wf, Signature)]
-        constants = [wf for wf in child_workflows if not isinstance(wf, Signature)]
-
-        if constants:
-            if node.operation == OperationEnum.ADD:
-                if len(constants) > 1:
-                    constants_task = xsum.s(constants)
-                    tasks.append(constants_task)
-
-            elif node.operation == OperationEnum.MUL:
-                if len(constants) > 1:
-                    constants_task = xprod.s(constants)
-                    tasks.append(constants_task)
-
-        if not tasks:
-            if len(constants) == 1:
-                return constants[0]
-            return 1.0 if node.operation == OperationEnum.MUL else 0.0
-
-        if len(tasks) == 1:
-            if len(constants) == 1 and len(child_workflows) > 1:
-                return chain(tasks[0], combine_and_operate.s(
-                    operation_name=node.operation.value,
-                    fixed_operand=constants[0],
-                    is_left_fixed=False
-                ))
-            return tasks[0]
-
-        parallel_group = group(tasks)
-        logger.info(f"  - Created final parallel group: {parallel_group}")
-
-        aggregator_task = xsum.s() if node.operation == OperationEnum.ADD else xprod.s()
-
-        final_workflow = chord(header=group(tasks), body=aggregator_task)
-
-        if len(constants) == 1 and len(child_workflows) > len(tasks):
-            final_workflow |= combine_and_operate.s(
-                operation_name=node.operation.value,
-                fixed_operand=constants[0],
-                is_left_fixed=False
+        if left_is_value and right_is_value:
+            task_input = ArithmeticInput(x=left_workflow, y=right_workflow)
+            return Node(
+                topic=OPERATION_TOPIC_MAP[node.operation],
+                input=task_input.model_dump_json()
             )
 
-        logger.info(f"  - Created final chain for group: {final_workflow}")
-        return final_workflow
+        if not left_is_value and not right_is_value:
+            if not node.operation.is_commutative:
+                raise NotImplementedError("Combining two complex workflows with a non-commutative operator is not yet supported.")
+
+            aggregator_topic = AGGREGATOR_TOPIC_MAP.get(node.operation)
+            if not aggregator_topic:
+                raise ValueError(f"No aggregator available for commutative operation: {node.operation}")
+
+            return Chord(
+                nodes=[left_workflow, right_workflow],
+                callback=Node(topic=aggregator_topic)
+            )
+
+        else:
+            if right_is_value:
+                main_workflow = left_workflow
+                fixed_value = right_workflow
+                is_left_fixed = False
+            else:
+                main_workflow = right_workflow
+                fixed_value = left_workflow
+                is_left_fixed = True
+
+            combiner_config = {
+                "fixed_operand": fixed_value,
+                "is_left_fixed": is_left_fixed,
+                "operation_name": node.operation.value,
+            }
+
+            callback_node = Node(
+                topic=COMBINER_TOPIC,
+                input=json.dumps(combiner_config)
+            )
+
+            return Chord(
+                nodes=[main_workflow],
+                callback=callback_node
+            )
