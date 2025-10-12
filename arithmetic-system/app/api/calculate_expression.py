@@ -15,3 +15,4 @@ def evaluate(expression: str = Query(..., description="Arithmetic expression to 
         return CalculateExpressionResponse(**result)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+

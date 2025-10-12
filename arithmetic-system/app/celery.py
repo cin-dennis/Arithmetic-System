@@ -9,7 +9,9 @@ app = Celery(
         'app.services.sub_service',
         'app.services.mul_service',
         'app.services.div_service',
-        'app.services.xsum_service'
+        'app.services.xsum_service',
+        'app.services.xprod_service',
+        'app.services.combiner_service'
     ]
 )
 
