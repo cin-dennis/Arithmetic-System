@@ -1,6 +1,5 @@
 from ..celery import app
 import logging
-from celery import Task
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
