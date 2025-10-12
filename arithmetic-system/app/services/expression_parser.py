@@ -8,13 +8,11 @@ from enum import Enum
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-
 class ExpressionType(Enum):
     SIMPLE = "simple"
     SEQUENTIAL = "sequential"
     PARALLEL = "parallel"
     HYBRID = "hybrid"
-
 
 class OperationEnum(str, Enum):
     ADD = "add"
