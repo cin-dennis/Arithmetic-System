@@ -1,5 +1,5 @@
-from typing import Union
-from .expression_parser import ExpressionNode, OperationEnum
+from typing import Union, List
+from .expression_parser import ExpressionNode
 import logging
 from mini.worker.workers.canvas import Node, Chain, Chord
 from ..models.worker_models import CalculatorInput, AggregatorInput
@@ -85,8 +85,14 @@ class WorkflowBuilder:
         all_operands = self._collect_operands(node, node.operation)
         child_workflows = [self._build_recursive(op) for op in all_operands]
 
-        tasks = [wf for wf in child_workflows if not isinstance(wf, float)]
-        constants = [wf for wf in child_workflows if isinstance(wf, float)]
+        tasks: List[Union[Node, Chain, Chord]] = []
+        constants: List[float] = []
+
+        for wf in child_workflows:
+            if isinstance(wf, float):
+                constants.append(wf)
+            else:
+                tasks.append(wf)
 
         aggregator_topic = AGGREGATOR_TOPIC_MAP.get(node.operation)
         if not aggregator_topic:
