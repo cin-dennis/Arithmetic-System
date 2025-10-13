@@ -10,9 +10,21 @@ class XSumWorker(Worker[AggregatorInput, CalculatorOutput]):
     Input = AggregatorInput
     Output = CalculatorOutput
 
+    async def before_start(self, input_obj: AggregatorInput) -> None:
+        pass
+
+    async def on_success(self, input_obj: AggregatorInput, result: CalculatorOutput) -> None:
+        pass
+
+    async def on_failure(self, input_obj: AggregatorInput, exc: Exception) -> None:
+        pass
+
     async def process(self, input_obj: AggregatorInput) -> CalculatorOutput:
         result = fsum(input_obj.values)
         return CalculatorOutput(result=result)
+
+    async def sent_result(self, topic: str, input_obj: CalculatorOutput) -> None:
+        pass
 
 async def main():
     xsum_worker = XSumWorker(BROKER, XSUM_TASKS_TOPIC, RESULT_BACKEND)

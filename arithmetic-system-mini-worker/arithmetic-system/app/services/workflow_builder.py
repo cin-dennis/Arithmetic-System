@@ -77,7 +77,7 @@ class WorkflowBuilder:
             operands.append(node)
         return operands
 
-    def _build_flat_workflow(self, node: ExpressionNode) -> Chord:
+    def _build_flat_workflow(self, node: ExpressionNode) -> Union[Node, Chord]:
         all_operands = self._collect_operands(node, node.operation)
         child_workflows = [self._build_recursive(op) for op in all_operands]
 
@@ -88,18 +88,19 @@ class WorkflowBuilder:
         if not aggregator_topic:
             raise ValueError(f"No aggregator for commutative operation: {node.operation}")
 
-        aggregator_input = AggregatorInput(values=constants).model_dump_json()
+        aggregator_topic = AGGREGATOR_TOPIC_MAP[node.operation]
+        aggregator_input = AggregatorInput(constants=constants)
 
         if not tasks:
             return Node(
                 topic=aggregator_topic,
-                input=aggregator_input
+                input=aggregator_input.model_dump_json()
             )
 
         return Chord(
             nodes=tasks,
             callback=Node(
                 topic=aggregator_topic,
-                input=aggregator_input
+                input=aggregator_input.model_dump_json()
             )
         )

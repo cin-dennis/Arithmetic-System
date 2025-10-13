@@ -54,13 +54,6 @@ services:
       - rabbitmq
       - redis
 
-  combiner_worker:
-    build: ./arithmetic-system
-    command: python -m app.workers.combiner_worker
-    depends_on:
-      - rabbitmq
-      - redis
-
   entrypoint:
     build: ./arithmetic-system
     ports:

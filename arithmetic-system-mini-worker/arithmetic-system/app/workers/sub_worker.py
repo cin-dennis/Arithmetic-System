@@ -8,6 +8,15 @@ class SubWorker(Worker[CalculatorInput, CalculatorOutput]):
     Input = CalculatorInput
     Output = CalculatorOutput
 
+    async def before_start(self, input_obj: CalculatorInput) -> None:
+        pass
+
+    async def on_success(self, input_obj: CalculatorInput, result: CalculatorOutput) -> None:
+        pass
+
+    async def on_failure(self, input_obj: CalculatorInput, exc: Exception) -> None:
+        pass
+
     async def process(self, input_obj: CalculatorInput) -> CalculatorOutput:
         if input_obj.current_value is not None:
             if input_obj.is_left_fixed:
@@ -18,6 +27,9 @@ class SubWorker(Worker[CalculatorInput, CalculatorOutput]):
             result = input_obj.x - input_obj.y
 
         return CalculatorOutput(result=result)
+
+    async def sent_result(self, topic: str, input_obj: CalculatorOutput) -> None:
+        pass
 
 async def main():
 
