@@ -27,8 +27,11 @@ class WorkflowBuilder:
         is_left_constant = isinstance(node.left, (int, float))
         is_right_constant = isinstance(node.right, (int, float))
         if is_left_constant and is_right_constant:
-            op_task = self.task_map[node.operation]
-            return op_task.s(node.left, node.right)
+            task_input = CalculatorInput(x=node.left, y=node.right)
+            return Node(
+                topic=OPERATION_TOPIC_MAP[node.operation],
+                input=task_input.model_dump_json()
+            )
 
         if node.operation.is_commutative and not is_left_constant and not is_right_constant:
             return self._build_flat_workflow(node)
@@ -39,33 +42,30 @@ class WorkflowBuilder:
             is_left_task = isinstance(left_workflow, Node)
             is_right_task = isinstance(right_workflow, Node)
 
-            # If both are constants, return single operation node
-            if not is_left_task and not is_right_task:
-                task_input = CalculatorInput(x=left_workflow, y=right_workflow)
-                return Node(
-                    topic=OPERATION_TOPIC_MAP[node.operation],
-                    input=task_input.model_dump_json()
-                )
             # If Left is task and Right is constant
-            # Create a Chain with Left task followed by Combiner with Right constant
-            elif is_left_task and not is_right_task:
-
-                return Chain(
-                    nodes=[left_workflow],
+            if is_left_task and not is_right_task:
+                op_input = CalculatorInput(y=right_workflow, is_left_fixed=False)
+                op_node = Node(
+                    topic=OPERATION_TOPIC_MAP[node.operation],
+                    input=op_input.model_dump_json()
                 )
+                return Chain(nodes=[left_workflow, op_node])
+
             # If Left is constant and Right is task
             elif not is_left_task and is_right_task:
-                return Chain(
-                    nodes=[right_workflow],
+                op_input = CalculatorInput(y=left_workflow, is_left_fixed=True)
+                op_node = Node(
+                    topic=OPERATION_TOPIC_MAP[node.operation],
+                    input=op_input.model_dump_json()
                 )
+                return Chain(nodes=[right_workflow, op_node])
+
             # If both are tasks, create a Chord to run them in parallel followed by Combiner
             else:
+                callback_node = Node(topic=OPERATION_TOPIC_MAP[node.operation])
                 return Chord(
                     nodes=[left_workflow, right_workflow],
-                    callback=Node(
-                        topic=OPERATION_TOPIC_MAP[node.operation],
-                        input=CalculatorInput(x=0, y=0).model_dump_json()
-                    )
+                    callback=callback_node
                 )
 
     def _collect_operands(self, node, operation: OperationEnum):

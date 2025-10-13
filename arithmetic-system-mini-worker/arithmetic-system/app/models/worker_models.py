@@ -4,8 +4,8 @@ from typing import List, Any
 
 class CalculatorInput(BaseModel):
     current_value: float | None = None
-    x: float
-    y: float
+    x: float | None = None
+    y: float | None = None
     is_left_fixed: bool = False
 
 class CalculatorOutput(BaseModel):
