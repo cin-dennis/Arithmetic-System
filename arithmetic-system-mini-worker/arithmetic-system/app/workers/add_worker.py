@@ -1,8 +1,7 @@
 import asyncio
 from mini.worker.workers import Worker
-from mini.worker.brokers.rabbitmq import RabbitMQBroker
-from mini.worker.result_backends.redis import RedisBackend
 from ..models.worker_models import ArithmeticInput, ArithmeticResult
+from .common import BROKER, RESULT_BACKEND
 
 class AddWorker(Worker[ArithmeticInput, ArithmeticResult]):
     Input = ArithmeticInput
@@ -13,10 +12,7 @@ class AddWorker(Worker[ArithmeticInput, ArithmeticResult]):
         return ArithmeticResult(value=result)
 
 async def main():
-    broker = RabbitMQBroker("amqp://guest:guest@rabbitmq:5672/")
-    result_backend = RedisBackend("redis://redis:6379/0")
-
-    add_worker = AddWorker(broker, "add_tasks", result_backend)
+    add_worker = AddWorker(BROKER, "add_tasks", RESULT_BACKEND)
     await add_worker.arun()
 
 if __name__ == "__main__":

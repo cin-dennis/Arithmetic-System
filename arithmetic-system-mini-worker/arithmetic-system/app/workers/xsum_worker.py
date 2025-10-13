@@ -2,9 +2,8 @@ import asyncio
 from math import fsum
 
 from mini.worker.workers import Worker
-from mini.worker.brokers.rabbitmq import RabbitMQBroker
-from mini.worker.result_backends.redis import RedisBackend
 from ..models.worker_models import AggregatorInput, ArithmeticResult
+from .common import BROKER, RESULT_BACKEND
 
 class XSumWorker(Worker[AggregatorInput, ArithmeticResult]):
     Input = AggregatorInput
@@ -15,10 +14,7 @@ class XSumWorker(Worker[AggregatorInput, ArithmeticResult]):
         return ArithmeticResult(value=result)
 
 async def main():
-    broker = RabbitMQBroker("amqp://guest:guest@rabbitmq:5672/")
-    result_backend = RedisBackend("redis://redis:6379/0")
-
-    xsum_worker = XSumWorker(broker, "xsum_tasks", result_backend)
+    xsum_worker = XSumWorker(BROKER, "xsum_tasks", RESULT_BACKEND)
     await xsum_worker.arun()
 
 if __name__ == "__main__":

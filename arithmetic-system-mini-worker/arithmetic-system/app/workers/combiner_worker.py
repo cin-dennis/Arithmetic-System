@@ -1,9 +1,8 @@
 import asyncio
 
 from mini.worker.workers import Worker
-from mini.worker.brokers.rabbitmq import RabbitMQBroker
-from mini.worker.result_backends.redis import RedisBackend
 from pydantic import BaseModel
+from .common import BROKER, RESULT_BACKEND
 
 class CombinerInput(BaseModel):
     previous_result: float
@@ -20,10 +19,7 @@ class CombinerWorker(Worker[BaseModel, CombinerOutput]):
 
 
 async def main():
-    broker = RabbitMQBroker("amqp://guest:guest@rabbitmq:5672/")
-    result_backend = RedisBackend("redis://redis:6379/0")
-
-    worker = CombinerWorker(broker, "combiner_tasks", result_backend)
+    worker = CombinerWorker(BROKER, "combiner_tasks", RESULT_BACKEND)
     await worker.arun()
 
 

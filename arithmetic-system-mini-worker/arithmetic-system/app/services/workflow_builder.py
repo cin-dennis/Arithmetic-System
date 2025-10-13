@@ -1,5 +1,4 @@
-import json
-from typing import Union, List
+from typing import Union
 from .expression_parser import ExpressionNode, OperationEnum
 import logging
 from mini.worker.workers.canvas import Node, Chain, Chord
@@ -45,42 +44,24 @@ class WorkflowBuilder:
             left_workflow = self._build_recursive(node.left)
             right_workflow = self._build_recursive(node.right)
 
-            left_is_value = isinstance(left_workflow, float)
-            right_is_value = isinstance(right_workflow, float)
+            is_left_task = isinstance(left_workflow, Node)
+            is_right_task = isinstance(right_workflow, Node)
 
-            if left_is_value and right_is_value:
+            if not is_left_task and not is_right_task:
                 task_input = ArithmeticInput(x=left_workflow, y=right_workflow)
                 return Node(
                     topic=OPERATION_TOPIC_MAP[node.operation],
                     input=task_input.model_dump_json()
                 )
-            if not left_is_value and not right_is_value:
-                aggregator_topic = AGGREGATOR_TOPIC_MAP.get(node.operation)
-                if not aggregator_topic:
-                    raise NotImplementedError(
-                        f"Combining two complex workflows with non-commutative op '{node.operation}' is not supported.")
-
-                return Chord(
-                    nodes=[left_workflow, right_workflow],
-                    callback=Node(topic=aggregator_topic)
-                )
-            else:
-                main_workflow = left_workflow if not left_is_value else right_workflow
-                fixed_value = right_workflow if left_is_value else left_workflow
-                is_left_fixed = right_is_value
-
+            elif is_left_task and not is_right_task:
                 combiner_config = {
-                    "fixed_operand": fixed_value,
-                    "is_left_fixed": is_left_fixed,
+                    "fixed_operand": right_workflow,
+                    "is_left_fixed": False,
                     "operation_name": node.operation.value,
                 }
+                return Chain(
+                    nodes=[left_workflow],
 
-                return Chord(
-                    nodes=[main_workflow],
-                    callback=Node(
-                        topic=COMBINER_TOPIC,
-                        input=json.dumps(combiner_config)
-                    )
                 )
 
     def _collect_operands(self, node, operation: OperationEnum):
