@@ -11,7 +11,6 @@ class SubWorker(Worker[ArithmeticInput, ArithmeticResult]):
 
     async def process(self, input_obj: ArithmeticInput) -> ArithmeticResult:
         result = input_obj.x - input_obj.y
-        # -------------------------
         return ArithmeticResult(value=result)
 
 async def main():

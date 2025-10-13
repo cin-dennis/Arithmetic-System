@@ -17,7 +17,7 @@ AGGREGATOR_TOPIC_MAP = {
     OperationEnum.ADD: "xsum_tasks",
     OperationEnum.MUL: "xprod_tasks",
 }
-COMBINER_TOPIC = "chord_combiner_tasks"
+COMBINER_TOPIC = "combiner_tasks"
 
 class WorkflowBuilder:
     def __init__(self, task_map):
@@ -85,8 +85,6 @@ class WorkflowBuilder:
                         input=json.dumps(combiner_config)
                     )
                 )
-
-
 
     def _collect_operands(self, node, operation: OperationEnum):
         operands = []

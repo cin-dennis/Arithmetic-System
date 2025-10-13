@@ -5,8 +5,9 @@
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/arithmetic-system-celery/arithmetic-system/venv" />
       <excludeFolder url="file://$MODULE_DIR$/arithmetic-system/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/arithmetic-system-mini-worker/arithmetic-system/venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.13 virtualenv at ~/Documents/Assignments/Arithmetic-System/arithmetic-system-celery/arithmetic-system/venv" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.13 virtualenv at ~/Documents/Assignments/Arithmetic-System/arithmetic-system-mini-worker/arithmetic-system/venv" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
