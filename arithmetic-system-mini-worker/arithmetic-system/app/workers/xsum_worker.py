@@ -11,7 +11,7 @@ class XSumWorker(Worker[AggregatorInput, CalculatorOutput]):
 
     async def process(self, input_obj: AggregatorInput) -> CalculatorOutput:
         result = fsum(input_obj.values)
-        return CalculatorOutput(value=result)
+        return CalculatorOutput(result=result)
 
 async def main():
     xsum_worker = XSumWorker(BROKER, "xsum_tasks", RESULT_BACKEND)

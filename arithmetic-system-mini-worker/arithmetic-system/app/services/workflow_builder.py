@@ -47,21 +47,33 @@ class WorkflowBuilder:
             is_left_task = isinstance(left_workflow, Node)
             is_right_task = isinstance(right_workflow, Node)
 
+            # If both are constants, return single operation node
             if not is_left_task and not is_right_task:
                 task_input = CalculatorInput(x=left_workflow, y=right_workflow)
                 return Node(
                     topic=OPERATION_TOPIC_MAP[node.operation],
                     input=task_input.model_dump_json()
                 )
+            # If Left is task and Right is constant
+            # Create a Chain with Left task followed by Combiner with Right constant
             elif is_left_task and not is_right_task:
-                combiner_config = {
-                    "fixed_operand": right_workflow,
-                    "is_left_fixed": False,
-                    "operation_name": node.operation.value,
-                }
+
                 return Chain(
                     nodes=[left_workflow],
-
+                )
+            # If Left is constant and Right is task
+            elif not is_left_task and is_right_task:
+                return Chain(
+                    nodes=[right_workflow],
+                )
+            # If both are tasks, create a Chord to run them in parallel followed by Combiner
+            else:
+                return Chord(
+                    nodes=[left_workflow, right_workflow],
+                    callback=Node(
+                        topic=OPERATION_TOPIC_MAP[node.operation],
+                        input=CalculatorInput(x=0, y=0).model_dump_json()
+                    )
                 )
 
     def _collect_operands(self, node, operation: OperationEnum):

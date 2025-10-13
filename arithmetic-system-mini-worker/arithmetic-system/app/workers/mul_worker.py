@@ -9,8 +9,11 @@ class MulWorker(Worker[CalculatorInput, CalculatorOutput]):
     Output = CalculatorOutput
 
     async def process(self, input_obj: CalculatorInput) -> CalculatorOutput:
-        result = input_obj.x * input_obj.y
-        return CalculatorOutput(value=result)
+        if input_obj.current_value is not None:
+            result = input_obj.current_value * input_obj.y
+        else:
+            result = input_obj.x * input_obj.y
+        return CalculatorOutput(result=result)
 
 async def main():
 

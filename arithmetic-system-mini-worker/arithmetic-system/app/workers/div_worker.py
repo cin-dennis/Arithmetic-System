@@ -9,10 +9,21 @@ class DivWorker(Worker[CalculatorInput, CalculatorOutput]):
     Output = CalculatorOutput
 
     async def process(self, input_obj: CalculatorInput) -> CalculatorOutput:
-        if input_obj.y == 0:
-            raise ValueError("Cannot divide by zero.")
-        result = input_obj.x / input_obj.y
-        return CalculatorOutput(value=result)
+        if input_obj.current_value is not None:
+            if input_obj.is_left_fixed:
+                if input_obj.current_value == 0:
+                    raise ValueError("Cannot divide by zero.")
+                result = input_obj.x / input_obj.current_value
+            else:
+                if input_obj.y == 0:
+                    raise ValueError("Cannot divide by zero.")
+                result = input_obj.current_value / input_obj.y
+        else:
+            if input_obj.y == 0:
+                raise ValueError("Cannot divide by zero.")
+            result = input_obj.x / input_obj.y
+
+        return CalculatorOutput(result=result)
 
 async def main():
 

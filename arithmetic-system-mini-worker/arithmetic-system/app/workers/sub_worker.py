@@ -1,5 +1,4 @@
 import asyncio
-
 from mini.worker.workers import Worker
 from ..models.worker_models import CalculatorInput, CalculatorOutput
 from .common import BROKER, RESULT_BACKEND
@@ -9,8 +8,15 @@ class SubWorker(Worker[CalculatorInput, CalculatorOutput]):
     Output = CalculatorOutput
 
     async def process(self, input_obj: CalculatorInput) -> CalculatorOutput:
-        result = input_obj.x - input_obj.y
-        return CalculatorOutput(value=result)
+        if input_obj.current_value is not None:
+            if input_obj.is_left_fixed:
+                result = input_obj.x - input_obj.current_value
+            else:
+                result = input_obj.current_value - input_obj.y
+        else:
+            result = input_obj.x - input_obj.y
+
+        return CalculatorOutput(result=result)
 
 async def main():
 

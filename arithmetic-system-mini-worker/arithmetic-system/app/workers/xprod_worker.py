@@ -11,7 +11,7 @@ class XProdWorker(Worker[AggregatorInput, CalculatorOutput]):
 
     async def process(self, input_obj: AggregatorInput) -> CalculatorOutput:
         result = float(prod(input_obj.values))
-        return CalculatorOutput(value=result)
+        return CalculatorOutput(result=result)
 
 async def main():
     xprod_worker = XProdWorker(BROKER, "xprod_tasks", RESULT_BACKEND)
