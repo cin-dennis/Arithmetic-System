@@ -18,15 +18,15 @@ class DivWorker(Worker[CalculatorInput, CalculatorOutput]):
         pass
 
     async def process(self, input_obj: CalculatorInput) -> CalculatorOutput:
-        if input_obj.current_value is not None:
+        if input_obj.result is not None:
             if input_obj.is_left_fixed:
-                if input_obj.current_value == 0:
+                if input_obj.result == 0:
                     raise ValueError("Cannot divide by zero.")
-                result = input_obj.x / input_obj.current_value
+                result = input_obj.x / input_obj.result
             else:
                 if input_obj.y == 0:
                     raise ValueError("Cannot divide by zero.")
-                result = input_obj.current_value / input_obj.y
+                result = input_obj.result / input_obj.y
         else:
             if input_obj.y == 0:
                 raise ValueError("Cannot divide by zero.")

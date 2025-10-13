@@ -3,7 +3,7 @@ from typing import List, Any
 
 
 class CalculatorInput(BaseModel):
-    current_value: float | None = None
+    result: float | None = None
     x: float | None = None
     y: float | None = None
     is_left_fixed: bool = False

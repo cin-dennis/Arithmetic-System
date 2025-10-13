@@ -22,8 +22,8 @@ class AddWorker(Worker[CalculatorInput, CalculatorOutput]):
 
     async def process(self, input_obj: CalculatorInput) -> CalculatorOutput:
         logger.info(f"Task started: {input_obj}")
-        if input_obj.current_value is not None:
-            result = input_obj.current_value + input_obj.y
+        if input_obj.result is not None:
+            result = input_obj.result + input_obj.y
         else:
             result = input_obj.x + input_obj.y
         return CalculatorOutput(result=result)
