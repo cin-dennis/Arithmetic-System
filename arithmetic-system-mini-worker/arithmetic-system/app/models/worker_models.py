@@ -1,11 +1,11 @@
 from pydantic import BaseModel
 from typing import List
 
-class ArithmeticInput(BaseModel):
+class CalculatorInput(BaseModel):
     x: float
     y: float
 
-class ArithmeticResult(BaseModel):
+class CalculatorOutput(BaseModel):
     value: float
 
 class AggregatorInput(BaseModel):

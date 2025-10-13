@@ -2,16 +2,16 @@ import asyncio
 from math import prod
 
 from mini.worker.workers import Worker
-from ..models.worker_models import AggregatorInput, ArithmeticResult
+from ..models.worker_models import AggregatorInput, CalculatorOutput
 from .common import BROKER, RESULT_BACKEND
 
-class XProdWorker(Worker[AggregatorInput, ArithmeticResult]):
+class XProdWorker(Worker[AggregatorInput, CalculatorOutput]):
     Input = AggregatorInput
-    Output = ArithmeticResult
+    Output = CalculatorOutput
 
-    async def process(self, input_obj: AggregatorInput) -> ArithmeticResult:
+    async def process(self, input_obj: AggregatorInput) -> CalculatorOutput:
         result = float(prod(input_obj.values))
-        return ArithmeticResult(value=result)
+        return CalculatorOutput(value=result)
 
 async def main():
     xprod_worker = XProdWorker(BROKER, "xprod_tasks", RESULT_BACKEND)

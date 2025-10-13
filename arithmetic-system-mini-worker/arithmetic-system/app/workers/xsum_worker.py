@@ -2,16 +2,16 @@ import asyncio
 from math import fsum
 
 from mini.worker.workers import Worker
-from ..models.worker_models import AggregatorInput, ArithmeticResult
+from ..models.worker_models import AggregatorInput, CalculatorOutput
 from .common import BROKER, RESULT_BACKEND
 
-class XSumWorker(Worker[AggregatorInput, ArithmeticResult]):
+class XSumWorker(Worker[AggregatorInput, CalculatorOutput]):
     Input = AggregatorInput
-    Output = ArithmeticResult
+    Output = CalculatorOutput
 
-    async def process(self, input_obj: AggregatorInput) -> ArithmeticResult:
+    async def process(self, input_obj: AggregatorInput) -> CalculatorOutput:
         result = fsum(input_obj.values)
-        return ArithmeticResult(value=result)
+        return CalculatorOutput(value=result)
 
 async def main():
     xsum_worker = XSumWorker(BROKER, "xsum_tasks", RESULT_BACKEND)

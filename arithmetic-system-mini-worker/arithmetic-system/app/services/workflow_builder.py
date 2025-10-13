@@ -2,7 +2,7 @@ from typing import Union
 from .expression_parser import ExpressionNode, OperationEnum
 import logging
 from mini.worker.workers.canvas import Node, Chain, Chord
-from ..models.worker_models import ArithmeticInput, AggregatorInput
+from ..models.worker_models import CalculatorInput, AggregatorInput
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ class WorkflowBuilder:
             is_right_task = isinstance(right_workflow, Node)
 
             if not is_left_task and not is_right_task:
-                task_input = ArithmeticInput(x=left_workflow, y=right_workflow)
+                task_input = CalculatorInput(x=left_workflow, y=right_workflow)
                 return Node(
                     topic=OPERATION_TOPIC_MAP[node.operation],
                     input=task_input.model_dump_json()

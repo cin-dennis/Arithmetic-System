@@ -6,7 +6,7 @@ from mini.worker.result_backends import Task
 from mini.worker.workers import Worker
 from pydantic import BaseModel
 from .common import BROKER, RESULT_BACKEND
-from ..models.worker_models import ArithmeticInput, ArithmeticResult
+from ..models.worker_models import CalculatorInput, CalculatorOutput
 
 OPERATION_TOPIC_MAP = {
     "add": "add_tasks",
@@ -45,7 +45,7 @@ class CombinerWorker(Worker[BaseModel, CombinerOutput]):
         try:
             # Step 1: Parse the incoming message from the previous task
             incoming_message = Message.model_validate_json(message_bytes)
-            previous_result = ArithmeticResult.model_validate_json(incoming_message.body)
+            previous_result = CalculatorOutput.model_validate_json(incoming_message.body)
 
             node_id = incoming_message.id
 
@@ -58,9 +58,9 @@ class CombinerWorker(Worker[BaseModel, CombinerOutput]):
 
             # Step 3: Combine dynamic result and static config into a new input
             if config.is_left_fixed:
-                final_input = ArithmeticInput(x=config.fixed_operand, y=previous_result.value)
+                final_input = CalculatorInput(x=config.fixed_operand, y=previous_result.value)
             else:
-                final_input = ArithmeticInput(x=previous_result.value, y=config.fixed_operand)
+                final_input = CalculatorInput(x=previous_result.value, y=config.fixed_operand)
 
             # Step 4: Dispatch the new task to the correct worker
             target_topic = OPERATION_TOPIC_MAP.get(config.operation_name)
