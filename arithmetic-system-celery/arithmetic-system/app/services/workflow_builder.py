@@ -43,33 +43,33 @@ class WorkflowBuilder:
         if node.operation.is_commutative and not is_left_constant and not is_right_constant:
             return self._build_flat_workflow(node)
         else:
-            left_op = self._build_recursive(node.left)
-            right_op = self._build_recursive(node.right)
+            left_workflow = self._build_recursive(node.left)
+            right_workflow = self._build_recursive(node.right)
 
-            is_left_task = isinstance(left_op, Signature)
-            is_right_task = isinstance(right_op, Signature)
+            is_left_task = isinstance(left_workflow, Signature)
+            is_right_task = isinstance(right_workflow, Signature)
 
             op_name = node.operation.value
 
             if not is_left_task and not is_right_task:
                 op_task = self.task_map[node.operation]
-                return op_task.s(left_op, right_op)
+                return op_task.s(left_workflow, right_workflow)
             elif is_left_task and not is_right_task:
                 combiner_sig = combine_and_operate.s(
                     operation_name=op_name,
-                    fixed_operand=right_op,
+                    fixed_operand=right_workflow,
                     is_left_fixed=False
                 )
-                return left_op | combiner_sig
+                return left_workflow | combiner_sig
             elif not is_left_task and is_right_task:
                 combiner_sig = combine_and_operate.s(
                     operation_name=op_name,
-                    fixed_operand=left_op,
+                    fixed_operand=left_workflow,
                     is_left_fixed=True
                 )
-                return right_op | combiner_sig
+                return right_workflow | combiner_sig
             else:
-                parallel_tasks = group(left_op, right_op)
+                parallel_tasks = group(left_workflow, right_workflow)
                 return chain(parallel_tasks, combine_and_operate.s(operation_name=op_name))
 
     def _collect_operands(self, node, operation: OperationEnum):

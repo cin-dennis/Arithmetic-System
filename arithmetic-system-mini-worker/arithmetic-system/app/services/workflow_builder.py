@@ -39,17 +39,14 @@ class WorkflowBuilder:
             op_task = self.task_map[node.operation]
             return op_task.s(node.left, node.right)
 
-        if node.operation.is_commutative:
-            all_operands = self._collect_operands(node, node.operation)
-            if len(all_operands) > 2:
-                return self._build_flat_workflow(all_operands, node.operation)
+        if node.operation.is_commutative and not is_left_constant and not is_right_constant:
+            return self._build_flat_workflow(node)
         else:
             left_workflow = self._build_recursive(node.left)
             right_workflow = self._build_recursive(node.right)
 
             left_is_value = isinstance(left_workflow, float)
             right_is_value = isinstance(right_workflow, float)
-
 
             if left_is_value and right_is_value:
                 task_input = ArithmeticInput(x=left_workflow, y=right_workflow)
@@ -95,15 +92,16 @@ class WorkflowBuilder:
             operands.append(node)
         return operands
 
-    def _build_flat_workflow(self, operands: List, operation: OperationEnum) -> Chord:
-        child_workflows = [self._build_recursive(op) for op in operands]
+    def _build_flat_workflow(self, node: ExpressionNode) -> Chord:
+        all_operands = self._collect_operands(node, node.operation)
+        child_workflows = [self._build_recursive(op) for op in all_operands]
 
         tasks = [wf for wf in child_workflows if not isinstance(wf, float)]
         constants = [wf for wf in child_workflows if isinstance(wf, float)]
 
-        aggregator_topic = AGGREGATOR_TOPIC_MAP.get(operation)
+        aggregator_topic = AGGREGATOR_TOPIC_MAP.get(node.operation)
         if not aggregator_topic:
-            raise ValueError(f"No aggregator for commutative operation: {operation}")
+            raise ValueError(f"No aggregator for commutative operation: {node.operation}")
 
         aggregator_input = AggregatorInput(values=constants).model_dump_json()
 
