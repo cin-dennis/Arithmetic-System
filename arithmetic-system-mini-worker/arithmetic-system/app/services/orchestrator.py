@@ -11,8 +11,6 @@ class WorkflowOrchestrator:
     def __init__(self):
         self.parser = ExpressionParser()
         self.builder = WorkflowBuilder()
-        self.broker = BROKER
-        self.result_backend = RESULT_BACKEND
 
     def calculate(self, expression: str) -> Dict[str, Any]:
         try:
@@ -33,15 +31,14 @@ class WorkflowOrchestrator:
             raise ValueError(f"Cannot calculate expression: {expression}. Error: {str(e)}")
 
     async def _execute_workflow(self, workflow):
-        workflow.broker = self.broker
-        workflow.result_backend = self.result_backend
+        await workflow.create(result_backend=RESULT_BACKEND)
+        await workflow.start(broker=BROKER)
 
-        await workflow.create()
-        await workflow.start()
-
-        result_node = await self.result_backend.get_result(workflow.id)
+        logger.info(f"Started workflow with ID: {workflow.id}")
+        result_node = await RESULT_BACKEND.get_result(workflow.id)
         while result_node is None:
             await asyncio.sleep(0.1)
-            result_node = await self.result_backend.get_result(workflow.id)
+            logger.info(f"Waiting for result of workflow ID: {workflow.id}")
+            result_node = await RESULT_BACKEND.get_result(workflow.id)
 
         return result_node.result_obj.get('value')

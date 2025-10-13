@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 class WorkflowBuilder:
 
     def build(self, expression_tree: Union[ExpressionNode, float]) -> Union[Node, Chain, Chord, float]:
+        logger.info(f"Building {expression_tree}")
         return self._build_recursive(expression_tree)
 
     def _build_recursive(self, node: Union[ExpressionNode, float]) -> Union[Node, Chain, Chord, float]:
@@ -24,14 +25,17 @@ class WorkflowBuilder:
         if not isinstance(node, ExpressionNode):
             raise TypeError(f"Invalid node type: {type(node)}")
 
+        logger.info(f"Building recursive node: {node}")
+
         is_left_constant = isinstance(node.left, (int, float))
         is_right_constant = isinstance(node.right, (int, float))
         if is_left_constant and is_right_constant:
             task_input = CalculatorInput(x=node.left, y=node.right)
-            return Node(
+            op_node = Node(
                 topic=OPERATION_TOPIC_MAP[node.operation],
                 input=task_input.model_dump_json()
             )
+            return Chain(nodes=[op_node])
 
         if node.operation.is_commutative and not is_left_constant and not is_right_constant:
             return self._build_flat_workflow(node)

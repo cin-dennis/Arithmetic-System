@@ -1,11 +1,10 @@
 import asyncio
-
-from mini.worker.workers import Worker
+from .base import AppBaseWorker
 from ..models.worker_models import CalculatorInput, CalculatorOutput
 from ..config import BROKER, RESULT_BACKEND
 from ..constants.constants import DIV_TASKS_TOPIC
 
-class DivWorker(Worker[CalculatorInput, CalculatorOutput]):
+class DivWorker(AppBaseWorker[CalculatorInput, CalculatorOutput]):
     Input = CalculatorInput
     Output = CalculatorOutput
 
