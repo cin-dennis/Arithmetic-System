@@ -2,6 +2,12 @@ FROM python:3.13-slim
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y git openssh-client build-essential && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p -m 0700 /root/.ssh && ssh-keyscan github.com >> /root/.ssh/known_hosts
+
+RUN --mount=type=ssh pip install "git+ssh://git@github.com/Cinnamon/mini.git"
+
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
