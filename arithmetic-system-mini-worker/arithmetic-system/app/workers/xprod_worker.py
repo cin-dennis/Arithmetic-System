@@ -20,7 +20,17 @@ class XProdWorker(Worker[AggregatorInput, CalculatorOutput]):
         pass
 
     async def process(self, input_obj: AggregatorInput) -> CalculatorOutput:
-        result = float(prod(input_obj.values))
+        values_to_multiply = []
+        if input_obj.children_result:
+            # Kết quả từ các tác vụ con được đóng gói, cần trích xuất giá trị 'result'
+            for child_res in input_obj.children_result:
+                 if isinstance(child_res, dict) and 'result' in child_res:
+                    values_to_multiply.append(child_res['result'])
+
+        if input_obj.constants:
+            values_to_multiply.extend(input_obj.constants)
+
+        result = float(prod(values_to_multiply))
         return CalculatorOutput(result=result)
 
     async def sent_result(self, topic: str, input_obj: CalculatorOutput) -> None:

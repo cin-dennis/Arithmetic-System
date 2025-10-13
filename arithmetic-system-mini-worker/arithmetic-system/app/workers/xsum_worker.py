@@ -20,7 +20,16 @@ class XSumWorker(Worker[AggregatorInput, CalculatorOutput]):
         pass
 
     async def process(self, input_obj: AggregatorInput) -> CalculatorOutput:
-        result = fsum(input_obj.values)
+        values_to_sum = []
+        if input_obj.children_result:
+            for child_res in input_obj.children_result:
+                if isinstance(child_res, dict) and 'result' in child_res:
+                    values_to_sum.append(child_res['result'])
+
+        if input_obj.constants:
+            values_to_sum.extend(input_obj.constants)
+
+        result = fsum(values_to_sum)
         return CalculatorOutput(result=result)
 
     async def sent_result(self, topic: str, input_obj: CalculatorOutput) -> None:

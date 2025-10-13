@@ -38,7 +38,6 @@ class WorkflowOrchestrator:
         result_node = await RESULT_BACKEND.get_result(workflow.id)
         while result_node is None:
             await asyncio.sleep(0.1)
-            logger.info(f"Waiting for result of workflow ID: {workflow.id}")
             result_node = await RESULT_BACKEND.get_result(workflow.id)
 
         return result_node.result_obj.get('value')
