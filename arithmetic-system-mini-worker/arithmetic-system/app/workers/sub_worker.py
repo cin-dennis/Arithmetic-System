@@ -2,9 +2,9 @@ import asyncio
 from ..models.worker_models import CalculatorInput, CalculatorOutput
 from ..config import BROKER, RESULT_BACKEND
 from ..constants.constants import SUB_TASKS_TOPIC
-from .base import AppBaseWorker
+from mini.worker.workers import Worker
 
-class SubWorker(AppBaseWorker[CalculatorInput, CalculatorOutput]):
+class SubWorker(Worker[CalculatorInput, CalculatorOutput]):
     Input = CalculatorInput
     Output = CalculatorOutput
 

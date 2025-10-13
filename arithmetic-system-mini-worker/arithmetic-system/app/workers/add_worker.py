@@ -3,11 +3,11 @@ from ..models.worker_models import CalculatorInput, CalculatorOutput
 from ..config import BROKER, RESULT_BACKEND
 from ..constants.constants import ADD_TASKS_TOPIC
 import logging
-from .base import AppBaseWorker
+from mini.worker.workers import Worker
 
 logger = logging.getLogger(__name__)
 
-class AddWorker(AppBaseWorker[CalculatorInput, CalculatorOutput]):
+class AddWorker(Worker[CalculatorInput, CalculatorOutput]):
     Input = CalculatorInput
     Output = CalculatorOutput
 
