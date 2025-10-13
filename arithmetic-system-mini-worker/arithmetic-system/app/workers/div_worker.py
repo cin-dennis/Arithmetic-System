@@ -2,7 +2,8 @@ import asyncio
 
 from mini.worker.workers import Worker
 from ..models.worker_models import CalculatorInput, CalculatorOutput
-from .common import BROKER, RESULT_BACKEND
+from ..config import BROKER, RESULT_BACKEND
+from ..constants.constants import DIV_TASKS_TOPIC
 
 class DivWorker(Worker[CalculatorInput, CalculatorOutput]):
     Input = CalculatorInput
@@ -27,7 +28,7 @@ class DivWorker(Worker[CalculatorInput, CalculatorOutput]):
 
 async def main():
 
-    div_worker = DivWorker(BROKER, "div_tasks", RESULT_BACKEND)
+    div_worker = DivWorker(BROKER, DIV_TASKS_TOPIC, RESULT_BACKEND)
     await div_worker.arun()
 
 if __name__ == "__main__":

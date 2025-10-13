@@ -3,7 +3,8 @@ from math import prod
 
 from mini.worker.workers import Worker
 from ..models.worker_models import AggregatorInput, CalculatorOutput
-from .common import BROKER, RESULT_BACKEND
+from ..config import BROKER, RESULT_BACKEND
+from ..constants.constants import XPROD_TASKS_TOPIC
 
 class XProdWorker(Worker[AggregatorInput, CalculatorOutput]):
     Input = AggregatorInput
@@ -14,7 +15,7 @@ class XProdWorker(Worker[AggregatorInput, CalculatorOutput]):
         return CalculatorOutput(result=result)
 
 async def main():
-    xprod_worker = XProdWorker(BROKER, "xprod_tasks", RESULT_BACKEND)
+    xprod_worker = XProdWorker(BROKER, XPROD_TASKS_TOPIC, RESULT_BACKEND)
     await xprod_worker.arun()
 
 

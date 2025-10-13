@@ -1,7 +1,8 @@
 import asyncio
 from mini.worker.workers import Worker
 from ..models.worker_models import CalculatorInput, CalculatorOutput
-from .common import BROKER, RESULT_BACKEND
+from ..config import BROKER, RESULT_BACKEND
+from ..constants.constants import ADD_TASKS_TOPIC
 
 class AddWorker(Worker[CalculatorInput, CalculatorOutput]):
     Input = CalculatorInput
@@ -15,7 +16,7 @@ class AddWorker(Worker[CalculatorInput, CalculatorOutput]):
         return CalculatorOutput(result=result)
 
 async def main():
-    add_worker = AddWorker(BROKER, "add_tasks", RESULT_BACKEND)
+    add_worker = AddWorker(BROKER, ADD_TASKS_TOPIC, RESULT_BACKEND)
     await add_worker.arun()
 
 if __name__ == "__main__":

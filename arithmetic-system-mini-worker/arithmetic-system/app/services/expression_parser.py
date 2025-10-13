@@ -1,9 +1,10 @@
 import re
 import ast
 import logging
-from typing import Union, Optional
+from typing import Union
 from dataclasses import dataclass
 from enum import Enum
+from ..constants.constants import OperationEnum
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -13,17 +14,6 @@ class ExpressionType(Enum):
     SEQUENTIAL = "sequential"
     PARALLEL = "parallel"
     HYBRID = "hybrid"
-
-class OperationEnum(str, Enum):
-    ADD = "add"
-    SUB = "sub"
-    MUL = "mul"
-    DIV = "div"
-
-    @property
-    def is_commutative(self):
-        return self in {OperationEnum.ADD, OperationEnum.MUL}
-
 
 @dataclass
 class ExpressionNode:
@@ -37,7 +27,6 @@ class ExpressionNode:
 class ParsedExpression:
     expression_tree: Union[ExpressionNode, float, None]
     original_expression: str
-
 
 class ExpressionParser:
     OPERATORS = {

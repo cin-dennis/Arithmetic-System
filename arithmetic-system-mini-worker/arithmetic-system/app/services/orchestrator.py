@@ -1,10 +1,8 @@
 import logging
 from typing import Dict, Any
-from mini.worker.brokers.rabbitmq import RabbitMQBroker
-from mini.worker.result_backends.redis import RedisBackend
 import asyncio
-
-from .expression_parser import ExpressionParser, OperationEnum, ExpressionType
+from ..config import BROKER, RESULT_BACKEND
+from .expression_parser import ExpressionParser
 from .workflow_builder import WorkflowBuilder
 
 logger = logging.getLogger(__name__)
@@ -12,9 +10,9 @@ logger = logging.getLogger(__name__)
 class WorkflowOrchestrator:
     def __init__(self):
         self.parser = ExpressionParser()
-        self.builder = WorkflowBuilder(self.task_map)
-        self.broker = RabbitMQBroker("amqp://guest:guest@rabbitmq:5672/")
-        self.result_backend = RedisBackend("redis://redis:6379/0")
+        self.builder = WorkflowBuilder()
+        self.broker = BROKER
+        self.result_backend = RESULT_BACKEND
 
     def calculate(self, expression: str) -> Dict[str, Any]:
         try:

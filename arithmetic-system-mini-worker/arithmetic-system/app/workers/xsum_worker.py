@@ -3,7 +3,8 @@ from math import fsum
 
 from mini.worker.workers import Worker
 from ..models.worker_models import AggregatorInput, CalculatorOutput
-from .common import BROKER, RESULT_BACKEND
+from ..config import BROKER, RESULT_BACKEND
+from ..constants.constants import XSUM_TASKS_TOPIC
 
 class XSumWorker(Worker[AggregatorInput, CalculatorOutput]):
     Input = AggregatorInput
@@ -14,7 +15,7 @@ class XSumWorker(Worker[AggregatorInput, CalculatorOutput]):
         return CalculatorOutput(result=result)
 
 async def main():
-    xsum_worker = XSumWorker(BROKER, "xsum_tasks", RESULT_BACKEND)
+    xsum_worker = XSumWorker(BROKER, XSUM_TASKS_TOPIC, RESULT_BACKEND)
     await xsum_worker.arun()
 
 if __name__ == "__main__":

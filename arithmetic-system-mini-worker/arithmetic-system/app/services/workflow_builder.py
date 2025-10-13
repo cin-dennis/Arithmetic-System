@@ -3,24 +3,16 @@ from .expression_parser import ExpressionNode, OperationEnum
 import logging
 from mini.worker.workers.canvas import Node, Chain, Chord
 from ..models.worker_models import CalculatorInput, AggregatorInput
+from ..constants.constants import (
+    OperationEnum,
+    OPERATION_TOPIC_MAP,
+    AGGREGATOR_TOPIC_MAP
+)
 
 logger = logging.getLogger(__name__)
 
-OPERATION_TOPIC_MAP = {
-    OperationEnum.ADD: "add_tasks",
-    OperationEnum.SUB: "sub_tasks",
-    OperationEnum.MUL: "mul_tasks",
-    OperationEnum.DIV: "div_tasks",
-}
-AGGREGATOR_TOPIC_MAP = {
-    OperationEnum.ADD: "xsum_tasks",
-    OperationEnum.MUL: "xprod_tasks",
-}
-COMBINER_TOPIC = "combiner_tasks"
 
 class WorkflowBuilder:
-    def __init__(self, task_map):
-        self.task_map = task_map
 
     def build(self, expression_tree: Union[ExpressionNode, float]) -> Union[Node, Chain, Chord, float]:
         return self._build_recursive(expression_tree)
