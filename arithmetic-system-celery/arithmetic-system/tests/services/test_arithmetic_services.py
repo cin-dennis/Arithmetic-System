@@ -1,9 +1,9 @@
 import pytest
-from app.services.add_service import add
-from app.services.sub_service import subtract
-from app.services.mul_service import multiply
-from app.services.div_service import divide
-from app.services.xsum_service import xsum
+from app.workers.add_service import add
+from app.workers.sub_service import subtract
+from app.workers.mul_service import multiply
+from app.workers.div_service import divide
+from app.workers.xsum_service import xsum
 
 def test_add_task():
     assert add(5, 3) == 8

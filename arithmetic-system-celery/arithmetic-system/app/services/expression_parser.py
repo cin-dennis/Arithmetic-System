@@ -8,12 +8,6 @@ from enum import Enum
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-class ExpressionType(Enum):
-    SIMPLE = "simple"
-    SEQUENTIAL = "sequential"
-    PARALLEL = "parallel"
-    HYBRID = "hybrid"
-
 class OperationEnum(str, Enum):
     ADD = "add"
     SUB = "sub"
@@ -30,8 +24,6 @@ class ExpressionNode:
     operation: OperationEnum
     left: Union[float, 'ExpressionNode']
     right: Union[float, 'ExpressionNode']
-    level: int = 0
-
 
 @dataclass
 class ParsedExpression:
@@ -84,8 +76,7 @@ class ExpressionParser:
             result = ExpressionNode(
                 operation=self.OPERATORS[op_symbol],
                 left=left,
-                right=right,
-                level=level
+                right=right
             )
 
             return result
@@ -131,7 +122,7 @@ class ExpressionParser:
 
         if isinstance(tree, ExpressionNode):
             connector = "└── " if is_last else "├── "
-            logger.info(f"{prefix}{connector}[{tree.operation.upper()}] (Level: {tree.level})")
+            logger.info(f"{prefix}{connector}[{tree.operation.upper()}]")
 
             child_prefix = prefix + ("    " if is_last else "│   ")
 

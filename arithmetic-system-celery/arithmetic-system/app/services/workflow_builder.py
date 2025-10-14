@@ -1,10 +1,10 @@
 from celery import chain, group, Signature, chord
 from celery.result import EagerResult
 import uuid
-from .expression_parser import ExpressionNode, ExpressionType, OperationEnum
+from .expression_parser import ExpressionNode, OperationEnum
 import logging
-from .xsum_service import xsum
-from .xprod_service import xprod
+from ..workers.xsum_service import xsum
+from ..workers.xprod_service import xprod
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,6 @@ class WorkflowBuilder:
             is_left_task = isinstance(left_workflow, Signature)
             is_right_task = isinstance(right_workflow, Signature)
 
-            op_name = node.operation.value
             op_task = self.task_map[node.operation]
 
             if is_left_task and not is_right_task:

@@ -1,12 +1,12 @@
 import logging
 from typing import Dict, Any
 
-from .add_service import add as add_task
-from .mul_service import multiply as mul_task
-from .div_service import divide as div_task
-from .sub_service import subtract as sub_task
+from ..workers.add_service import add as add_task
+from ..workers.mul_service import multiply as mul_task
+from ..workers.div_service import divide as div_task
+from ..workers.sub_service import subtract as sub_task
 
-from .expression_parser import ExpressionParser, OperationEnum, ExpressionType
+from .expression_parser import ExpressionParser, OperationEnum
 from .workflow_builder import WorkflowBuilder
 
 logger = logging.getLogger(__name__)
