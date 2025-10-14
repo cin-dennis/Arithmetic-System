@@ -54,13 +54,6 @@ services:
       - rabbitmq
       - redis
 
-  combiner_worker:
-    build: ./arithmetic-system
-    command: celery -A app.celery worker -Q combine_tasks --loglevel=info
-    depends_on:
-      - rabbitmq
-      - redis
-
   entrypoint:
     build: ./arithmetic-system
     ports:

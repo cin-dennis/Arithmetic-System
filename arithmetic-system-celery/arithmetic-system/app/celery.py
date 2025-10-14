@@ -5,13 +5,12 @@ app = Celery(
     broker='pyamqp://guest@rabbitmq//',
     backend='redis://redis:6379/0',
     include=[
-        'app.services.add_service',
-        'app.services.sub_service',
-        'app.services.mul_service',
-        'app.services.div_service',
-        'app.services.xsum_service',
-        'app.services.xprod_service',
-        'app.services.combiner_service'
+        'app.workers.add_service',
+        'app.workers.sub_service',
+        'app.workers.mul_service',
+        'app.workers.div_service',
+        'app.workers.xsum_service',
+        'app.workers.xprod_service'
     ]
 )
 

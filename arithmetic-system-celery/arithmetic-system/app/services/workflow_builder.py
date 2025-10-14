@@ -1,11 +1,10 @@
 from celery import chain, group, Signature, chord
 from celery.result import EagerResult
 import uuid
-from .combiner_service import combine_and_operate
-from .expression_parser import ExpressionNode, ExpressionType, OperationEnum
+from .expression_parser import ExpressionNode, OperationEnum
 import logging
-from .xsum_service import xsum
-from .xprod_service import xprod
+from ..workers.xsum_service import xsum
+from ..workers.xprod_service import xprod
 
 logger = logging.getLogger(__name__)
 
@@ -43,34 +42,21 @@ class WorkflowBuilder:
         if node.operation.is_commutative and not is_left_constant and not is_right_constant:
             return self._build_flat_workflow(node)
         else:
-            left_op = self._build_recursive(node.left)
-            right_op = self._build_recursive(node.right)
+            left_workflow = self._build_recursive(node.left)
+            right_workflow = self._build_recursive(node.right)
 
-            is_left_task = isinstance(left_op, Signature)
-            is_right_task = isinstance(right_op, Signature)
+            is_left_task = isinstance(left_workflow, Signature)
+            is_right_task = isinstance(right_workflow, Signature)
 
-            op_name = node.operation.value
+            op_task = self.task_map[node.operation]
 
-            if not is_left_task and not is_right_task:
-                op_task = self.task_map[node.operation]
-                return op_task.s(left_op, right_op)
-            elif is_left_task and not is_right_task:
-                combiner_sig = combine_and_operate.s(
-                    operation_name=op_name,
-                    fixed_operand=right_op,
-                    is_left_fixed=False
-                )
-                return left_op | combiner_sig
+            if is_left_task and not is_right_task:
+                return chain(left_workflow, op_task.s(y=right_workflow, is_left_fixed=False))
             elif not is_left_task and is_right_task:
-                combiner_sig = combine_and_operate.s(
-                    operation_name=op_name,
-                    fixed_operand=left_op,
-                    is_left_fixed=True
-                )
-                return right_op | combiner_sig
+                return chain(right_workflow, op_task.s(y=left_workflow, is_left_fixed=True))
             else:
-                parallel_tasks = group(left_op, right_op)
-                return chain(parallel_tasks, combine_and_operate.s(operation_name=op_name))
+                parallel_tasks = group(left_workflow, right_workflow)
+                return chord(parallel_tasks, op_task.s())
 
     def _collect_operands(self, node, operation: OperationEnum):
         operands = []
@@ -82,6 +68,8 @@ class WorkflowBuilder:
         return operands
 
     def _build_flat_workflow(self, node: ExpressionNode) -> Signature | float:
+        op_task = self.task_map[node.operation]
+
         all_operands = self._collect_operands(node, node.operation)
         child_workflows = [self._build_recursive(op) for op in all_operands]
 
@@ -106,11 +94,7 @@ class WorkflowBuilder:
 
         if len(tasks) == 1:
             if len(constants) == 1 and len(child_workflows) > 1:
-                return chain(tasks[0], combine_and_operate.s(
-                    operation_name=node.operation.value,
-                    fixed_operand=constants[0],
-                    is_left_fixed=False
-                ))
+                return chain(tasks[0], op_task.s(y=constants[0], is_left_fixed=False))
             return tasks[0]
 
         parallel_group = group(tasks)
@@ -121,11 +105,7 @@ class WorkflowBuilder:
         final_workflow = chord(header=group(tasks), body=aggregator_task)
 
         if len(constants) == 1 and len(child_workflows) > len(tasks):
-            final_workflow |= combine_and_operate.s(
-                operation_name=node.operation.value,
-                fixed_operand=constants[0],
-                is_left_fixed=False
-            )
+            return chain(tasks[0], op_task.s(y=constants[0], is_left_fixed=False))
 
         logger.info(f"  - Created final chain for group: {final_workflow}")
         return final_workflow
