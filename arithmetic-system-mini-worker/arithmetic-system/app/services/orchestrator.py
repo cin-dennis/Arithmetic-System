@@ -17,6 +17,8 @@ class WorkflowOrchestrator:
     async def calculate(self, expression: str) -> CalculateExpressionResponse:
         parsed = self.parser.parse(expression)
 
+        logger.info("Parsed expression: %s", parsed)
+
         workflow, workflow_str = self.builder.build(parsed)
 
         logger.info("Workflow is: %s", workflow_str)

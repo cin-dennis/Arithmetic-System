@@ -31,8 +31,8 @@ class OperationEnum(Enum):
 @dataclass
 class ExpressionNode:
     operation: OperationEnum
-    left: ExpressionNode | float
-    right: ExpressionNode | float
+    left: ExpressionNode | float | int
+    right: ExpressionNode | float | int
 
     def log_tree(self, indent: int = 0, prefix: str = "") -> str:
         result = []
