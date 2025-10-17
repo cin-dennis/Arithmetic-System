@@ -2,38 +2,32 @@ import asyncio
 from math import prod
 
 from mini.worker.workers import Worker
-from ..models.worker_models import AggregatorInput, CalculatorOutput
+from ..models.worker_models import AggregateInput, NumberOutput
 from ..config import BROKER, RESULT_BACKEND
 from ..constants.constants import XPROD_TASKS_TOPIC
 
-class XProdWorker(Worker[AggregatorInput, CalculatorOutput]):
-    Input = AggregatorInput
-    Output = CalculatorOutput
+class XProdWorker(Worker[AggregateInput, NumberOutput]):
+    Input = AggregateInput
+    Output = NumberOutput
 
-    async def before_start(self, input_obj: AggregatorInput) -> None:
+    async def before_start(self, input_obj: AggregateInput) -> None:
         pass
 
-    async def on_success(self, input_obj: AggregatorInput, result: CalculatorOutput) -> None:
+    async def on_success(self, input_obj: AggregateInput, result: NumberOutput) -> None:
         pass
 
-    async def on_failure(self, input_obj: AggregatorInput, exc: Exception) -> None:
+    async def on_failure(self, input_obj: AggregateInput, exc: Exception) -> None:
         pass
 
-    async def process(self, input_obj: AggregatorInput) -> CalculatorOutput:
-        values_to_multiply = []
-        if input_obj.children_result:
-            # Kết quả từ các tác vụ con được đóng gói, cần trích xuất giá trị 'result'
-            for child_res in input_obj.children_result:
-                 if isinstance(child_res, dict) and 'result' in child_res:
-                    values_to_multiply.append(child_res['result'])
+    async def process(self, input_obj: AggregateInput) -> NumberOutput:
+        numbers = input_obj.numbers
+        result = 1.0
+        for val in numbers:
+            result *= val
+        print(f"XPROD: prod({numbers}) = {result}")
+        return NumberOutput(result=result)
 
-        if input_obj.constants:
-            values_to_multiply.extend(input_obj.constants)
-
-        result = float(prod(values_to_multiply))
-        return CalculatorOutput(result=result)
-
-    async def sent_result(self, topic: str, input_obj: CalculatorOutput) -> None:
+    async def sent_result(self, topic: str, input_obj: NumberOutput) -> None:
         pass
 
 async def main():

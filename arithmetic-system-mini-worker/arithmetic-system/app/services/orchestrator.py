@@ -12,14 +12,16 @@ class WorkflowOrchestrator:
         self.parser = ExpressionParser()
         self.builder = WorkflowBuilder()
 
-    def calculate(self, expression: str) -> Dict[str, Any]:
+    async def calculate(self, expression: str) -> Dict[str, Any]:
         try:
             parsed = self.parser.parse(expression)
+            logger.info(f"Parsed Expression Tree: {parsed.expression_tree}")
             workflow = self.builder.build(parsed.expression_tree)
+            logger.info(f"Built Workflow: {workflow}")
             if isinstance(workflow, float):
                 final_result = workflow
             else:
-                final_result = asyncio.run(self._execute_workflow(workflow))
+                final_result = await self._execute_workflow(workflow)
             logger.info(f"Final Result: {final_result}")
 
             return {
@@ -35,9 +37,13 @@ class WorkflowOrchestrator:
         await workflow.start(broker=BROKER)
 
         logger.info(f"Started workflow with ID: {workflow.id}")
+        logger.info("Waiting for workflow to complete...")
         result_node = await RESULT_BACKEND.get_result(workflow.id)
+        logger.info(f"Result Node: {result_node}")
         while result_node is None:
             await asyncio.sleep(0.1)
+            logger.info(f"Waiting for workflow {workflow.id} to complete...")
             result_node = await RESULT_BACKEND.get_result(workflow.id)
 
-        return result_node.result_obj.get('value')
+        logger.info(f"Finished workflow with ID: {workflow.id}")
+        return result_node.result_obj.get('result')

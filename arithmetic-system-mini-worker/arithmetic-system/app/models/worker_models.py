@@ -1,16 +1,42 @@
-from pydantic import BaseModel
-from typing import List, Any
+from mini.models import BaseModel
 
+class NumberInput(BaseModel):
+    value: float
 
-class CalculatorInput(BaseModel):
-    result: float | None = None
-    x: float | None = None
-    y: float | None = None
-    is_left_fixed: bool = False
+class BinaryOperationInput(BaseModel):
+    a: float
+    b: float
 
-class CalculatorOutput(BaseModel):
+class UnaryOperationInput(BaseModel):
+    value: float
+
+class ArrayInput(BaseModel):
+    values: list[float]
+
+class AggregateInput(BaseModel):
+    values: list[float] | None = None
+    children_result: list[float] | None = None
+    input: str | None = None
+
+    @property
+    def numbers(self) -> list[float]:
+        if self.values is not None:
+            return self.values
+        if self.children_result is not None:
+            return self.children_result
+        raise ValueError("Either 'values' or 'children_result' must be provided")
+
+class ChordCallbackInput(BaseModel):
+    children_result: list[float]
+    input: str | None = None
+
+class NumberOutput(BaseModel):
     result: float
 
-class AggregatorInput(BaseModel):
-    children_result: List[Any] | None = None
-    constants: List[float] | None = None
+class ArrayOutput(BaseModel):
+    results: list[float]
+
+class ChainLinkInput(BaseModel):
+    result: float
+    next_operand: float
+

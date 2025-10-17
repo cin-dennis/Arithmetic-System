@@ -7,11 +7,11 @@ services:
       - "15672:15672"
       - "5672:5672"
     healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
+      test: rabbitmq-diagnostics -q check_port_connectivity
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 9s
+      start_period: 20s
 
   redis:
     image: redis:7.2
@@ -24,7 +24,7 @@ services:
       retries: 5
 
   add_worker:
-    build: ./arithmetic-system
+    build: .
     command: python -m app.workers.add_worker
     depends_on:
       rabbitmq:
@@ -34,7 +34,7 @@ services:
     restart: on-failure
 
   sub_worker:
-    build: ./arithmetic-system
+    build: .
     command: python -m app.workers.sub_worker
     depends_on:
       rabbitmq:
@@ -44,7 +44,7 @@ services:
     restart: on-failure
 
   mul_worker:
-    build: ./arithmetic-system
+    build: .
     command: python -m app.workers.mul_worker
     depends_on:
       rabbitmq:
@@ -54,7 +54,7 @@ services:
     restart: on-failure
 
   div_worker:
-    build: ./arithmetic-system
+    build: .
     command: python -m app.workers.div_worker
     depends_on:
       rabbitmq:
@@ -64,7 +64,7 @@ services:
     restart: on-failure
 
   xsum_worker:
-    build: ./arithmetic-system
+    build: .
     command: python -m app.workers.xsum_worker
     depends_on:
       rabbitmq:
@@ -74,7 +74,7 @@ services:
     restart: on-failure
 
   xprod_worker:
-    build: ./arithmetic-system
+    build: .
     command: python -m app.workers.xprod_worker
     depends_on:
       rabbitmq:
@@ -84,7 +84,7 @@ services:
     restart: on-failure
 
   entrypoint:
-    build: ./arithmetic-system
+    build: .
     ports:
       - "8000:8000"
     depends_on:
