@@ -13,13 +13,19 @@ logger = logging.getLogger(__name__)
 
 
 class WorkflowBuilder:
-    def build(self, expression_tree: Union[ExpressionNode, float]) \
-            -> Chain | Chord | float:
+    def build(
+            self,
+            expression_tree:
+            Union[ExpressionNode, float]
+    ) -> Chain | Chord | float:
         logger.info(f"Building {expression_tree}")
         return self._build_recursive(expression_tree)
 
-    def _build_recursive(self, node: Union[ExpressionNode, float]) \
-            -> Node | Chain | Chord | float:
+    def _build_recursive(
+            self,
+            node: Union[ExpressionNode,
+            float]
+    ) -> Node | Chain | Chord | float:
         if isinstance(node, (int, float)):
             return float(node)
 
@@ -117,7 +123,10 @@ class WorkflowBuilder:
         constants = [w for w in workflows if isinstance(w, (int, float))]
         return tasks, constants
 
-    def _handle_no_tasks(self, node: ExpressionNode, constants, identity) -> Node | float:
+    def _handle_no_tasks(
+        self,
+        node: ExpressionNode, constants, identity
+    ) -> Node | float:
         num_constants = len(constants)
         if num_constants == 0:
             return identity
@@ -136,7 +145,11 @@ class WorkflowBuilder:
             input=aggregate_input.model_dump_json(),
         )
 
-    def _handle_single_task(self, node: ExpressionNode, tasks, constants) -> Node | Chain | Chord | float:
+    def _handle_single_task(
+        self,
+        node: ExpressionNode,
+        tasks, constants
+    ) -> Node | Chain | Chord | float:
         task = tasks[0]
         num_constants = len(constants)
 
@@ -158,7 +171,11 @@ class WorkflowBuilder:
         tasks.append(aggregate_task)
         return Chord(nodes=tasks, callback=aggregate_task)
 
-    def _handle_multiple_tasks(self, node: ExpressionNode, tasks, constants) -> Chord:
+    def _handle_multiple_tasks(
+        self,
+        node: ExpressionNode,
+        tasks, constants
+    ) -> Chord:
         num_constants = len(constants)
 
         if num_constants == 1:
