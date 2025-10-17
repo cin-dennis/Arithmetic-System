@@ -35,7 +35,7 @@ class WorkflowOrchestrator:
 
         return CalculateExpressionResponse(result=final_result, workflow=workflow_str)
 
-    async def _wait_for_result(self, workflow_id: str, timeout: int = 10) -> float:
+    async def _wait_for_result(self, workflow_id: str, timeout: int = 10) -> int | float:
         logger.info(f"Waiting for result for workflow_id: {workflow_id}")
 
         for i in range(timeout * 2):
@@ -47,7 +47,7 @@ class WorkflowOrchestrator:
                 if isinstance(final_value, dict) and 'result' in final_value:
                     return float(final_value['result'])
 
-                return float(final_value)
+                return final_value
 
             logger.debug(f"Result for {workflow_id} not ready yet. Attempt {i + 1}/{timeout * 2}")
             await asyncio.sleep(0.1)
