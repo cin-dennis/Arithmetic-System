@@ -1,14 +1,4 @@
-from enum import Enum
-
-class OperationEnum(str, Enum):
-    ADD = "add"
-    SUB = "sub"
-    MUL = "mul"
-    DIV = "div"
-
-    @property
-    def is_commutative(self):
-        return self in {OperationEnum.ADD, OperationEnum.MUL}
+from ..services.expression_parser import OperationEnum
 
 ADD_TASKS_TOPIC = "add_tasks"
 SUB_TASKS_TOPIC = "sub_tasks"

@@ -1,17 +1,8 @@
 from mini.models import BaseModel
 
-class NumberInput(BaseModel):
-    value: int | float
-
 class BinaryOperationInput(BaseModel):
     x: int | float
     y: int | float
-
-class UnaryOperationInput(BaseModel):
-    value: int | float
-
-class ArrayInput(BaseModel):
-    values: list[int | float]
 
 class AggregateInput(BaseModel):
     values: list[int | float] | None = None
@@ -32,9 +23,6 @@ class ChordCallbackInput(BaseModel):
 
 class NumberOutput(BaseModel):
     result: int | float
-
-class ArrayOutput(BaseModel):
-    results: list[float]
 
 class ChainLinkInput(BaseModel):
     is_left_fixed: bool = False

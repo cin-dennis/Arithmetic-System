@@ -16,12 +16,12 @@ orchestrator = WorkflowOrchestrator()
 
 
 @router.get("/calculate", response_model=CalculateExpressionResponse)
-def evaluate(
+async def evaluate(
     expression: str = Query(..., description="Arithmetic expression to evaluate"),
 ) -> CalculateExpressionResponse:
     try:
         logger.info(f"Received expression to evaluate: {expression}")
-        result = orchestrator.calculate(expression)
+        result = await orchestrator.calculate(expression)
         return result
 
     except ExpressionSyntaxError as e:

@@ -16,11 +16,17 @@ class WorkflowBuilder:
         self,
         expression_tree:
         ExpressionNode | int | float,
-    ) -> Chain | Chord | int | float:
+    ) -> tuple[Chain | Chord | int | float, str]:
         workflow_object = self._build_recursive(expression_tree)
+
         if isinstance(workflow_object, Node):
-            return Chain(nodes=[workflow_object])
-        return workflow_object
+            final_workflow_object = Chain(nodes=[workflow_object])
+        else:
+            final_workflow_object = workflow_object
+
+        workflow_str = self._workflow_to_string(final_workflow_object)
+
+        return final_workflow_object, workflow_str
 
     def _build_recursive(
             self,
@@ -208,3 +214,27 @@ class WorkflowBuilder:
             input=aggregate_input.model_dump_json(),
         )
         return Chord(nodes=tasks, callback=aggregate_task)
+
+    def _workflow_to_string(self, workflow: Node | Chain | Chord | int | float) -> str:
+        if isinstance(workflow, (int, float)):
+            return f"constant({workflow})"
+
+        if isinstance(workflow, Node):
+            return f"Task({workflow.topic})"
+
+        if isinstance(workflow, Chain):
+            task_strings = [self._workflow_to_string(node) for node in workflow.nodes]
+            return " | ".join(task_strings)
+
+        if isinstance(workflow, Chord):
+            header_tasks = [self._workflow_to_string(node) for node in workflow.nodes]
+            header_str = f"group({', '.join(header_tasks)})"
+
+            if workflow.callback:
+                callback_str = self._workflow_to_string(workflow.callback)
+            else:
+                callback_str = "None"
+
+            return f"chord({header_str}, body={callback_str})"
+
+        return "Unknown Workflow Object"
