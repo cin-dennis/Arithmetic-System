@@ -7,10 +7,18 @@ class DivWrapperWorker(Worker[ChainLinkInput, NumberOutput]):
     Output = NumberOutput
 
     async def process(self, input_obj: ChainLinkInput) -> NumberOutput:
-        if input_obj.next_operand == 0:
+        if input_obj.is_left_fixed:
+            dividend = input_obj.next_operand
+            divisor = input_obj.result
+        else:
+            dividend = input_obj.result
+            divisor = input_obj.next_operand
+
+        if divisor == 0:
             raise ValueError("Division by zero")
-        result = input_obj.result / input_obj.next_operand
-        print(f"DIV_WRAPPER: {input_obj.result} / {input_obj.next_operand} = {result}")
+
+        result = dividend / divisor
+
         return NumberOutput(result=result)
 
     async def before_start(self, input_obj: ChainLinkInput) -> None:

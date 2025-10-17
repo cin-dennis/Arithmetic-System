@@ -6,7 +6,10 @@ class SubWrapperWorker(Worker[ChainLinkInput, NumberOutput]):
     Output = NumberOutput
 
     async def process(self, input_obj: ChainLinkInput) -> NumberOutput:
-        result = input_obj.result - input_obj.next_operand
+        if input_obj.is_left_fixed:
+            result = input_obj.result - input_obj.next_operand
+        else:
+            result = input_obj.next_operand - input_obj.result
         print(f"SUB_WRAPPER: {input_obj.result} - {input_obj.next_operand} = {result}")
         return NumberOutput(result=result)
 

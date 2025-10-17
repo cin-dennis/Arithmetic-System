@@ -1,25 +1,25 @@
 from mini.models import BaseModel
 
 class NumberInput(BaseModel):
-    value: float
+    value: int | float
 
 class BinaryOperationInput(BaseModel):
-    a: float
-    b: float
+    x: int | float
+    y: int | float
 
 class UnaryOperationInput(BaseModel):
-    value: float
+    value: int | float
 
 class ArrayInput(BaseModel):
-    values: list[float]
+    values: list[int | float]
 
 class AggregateInput(BaseModel):
-    values: list[float] | None = None
-    children_result: list[float] | None = None
+    values: list[int | float] | None = None
+    children_result: list[int | float] | None = None
     input: str | None = None
 
     @property
-    def numbers(self) -> list[float]:
+    def numbers(self) -> list[int | float]:
         if self.values is not None:
             return self.values
         if self.children_result is not None:
@@ -27,16 +27,17 @@ class AggregateInput(BaseModel):
         raise ValueError("Either 'values' or 'children_result' must be provided")
 
 class ChordCallbackInput(BaseModel):
-    children_result: list[float]
+    children_result: list[int | float] | None = None
     input: str | None = None
 
 class NumberOutput(BaseModel):
-    result: float
+    result: int | float
 
 class ArrayOutput(BaseModel):
     results: list[float]
 
 class ChainLinkInput(BaseModel):
-    result: float
-    next_operand: float
+    is_left_fixed: bool = False
+    result: int | float | None = None
+    next_operand: int | float
 

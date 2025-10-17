@@ -1,141 +1,130 @@
+from __future__ import annotations
 import re
 import ast
 import logging
-from typing import Union
 from dataclasses import dataclass
-from enum import Enum
-from ..constants.constants import OperationEnum
+from enum import Enum, auto
+from app.types.errors import (
+    ExpressionSyntaxError,
+    UnsupportedOperatorError,
+    UnsupportedNodeError,
+    UnsupportedUnaryOperatorError,
+)
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-class ExpressionType(Enum):
-    SIMPLE = "simple"
-    SEQUENTIAL = "sequential"
-    PARALLEL = "parallel"
-    HYBRID = "hybrid"
+REGEX_SPACES = re.compile(r"\s+")
+REGEX_VALID_CHARACTERS = re.compile(r"^[0-9+\-*/().%\s]+$")
+
+
+class OperationEnum(Enum):
+    ADD = auto()
+    SUB = auto()
+    MUL = auto()
+    DIV = auto()
+
+    @property
+    def is_commutative(self) -> bool:
+        return self in {OperationEnum.ADD, OperationEnum.MUL}
+
 
 @dataclass
 class ExpressionNode:
     operation: OperationEnum
-    left: Union[float, 'ExpressionNode']
-    right: Union[float, 'ExpressionNode']
-    level: int = 0
+    left: ExpressionNode | float
+    right: ExpressionNode | float
 
+    def log_tree(self, indent: int = 0, prefix: str = "") -> str:
+        result = []
+        current_indent = "  " * indent
 
-@dataclass
-class ParsedExpression:
-    expression_tree: Union[ExpressionNode, float, None]
-    original_expression: str
+        # Current node
+        op_symbol = self._get_operation_symbol()
+        result.append(f"{current_indent}{prefix}{op_symbol}")
+
+        # Left child
+        if isinstance(self.left, ExpressionNode):
+            result.append(self.left.log_tree(indent + 1, "├── "))
+        else:
+            result.append(f"{current_indent}  ├── {self.left}")
+
+        # Right child
+        if isinstance(self.right, ExpressionNode):
+            result.append(self.right.log_tree(indent + 1, "└── "))
+        else:
+            result.append(f"{current_indent}  └── {self.right}")
+
+        return "\n".join(result)
+
+    def _get_operation_symbol(self) -> str:
+        symbols = {
+            OperationEnum.ADD: "+",
+            OperationEnum.SUB: "-",
+            OperationEnum.MUL: "*",
+            OperationEnum.DIV: "/",
+        }
+        return symbols.get(self.operation, "?")
+
+    def __str__(self) -> str:
+        return self.log_tree()
+
 
 class ExpressionParser:
     OPERATORS = {
-        '+': OperationEnum.ADD,
-        '-': OperationEnum.SUB,
-        '*': OperationEnum.MUL,
-        '/': OperationEnum.DIV
+        ast.Add: OperationEnum.ADD,
+        ast.Sub: OperationEnum.SUB,
+        ast.Mult: OperationEnum.MUL,
+        ast.Div: OperationEnum.DIV,
     }
 
     def __init__(self):
         self.operations = []
-        self.parallel_groups = []
-        self.sequential_chains = []
 
-    def parse(self, expression: str) -> ParsedExpression:
-        logger.info("=" * 80)
-        logger.info(f"Input expression: {expression}")
-
+    def parse(self, expression: str) -> ExpressionNode | float | int:
+        clean_expr = self._clean_expression(expression)
         try:
-            clean_expr = self._clean_expression(expression)
-            tree = ast.parse(clean_expr, mode='eval')
-            expr_tree = self._build_expression_tree(tree.body, level=0)
-            self._log_tree_structure(expr_tree)
+            tree = ast.parse(clean_expr, mode="eval")
+        except SyntaxError as e:
+            raise ExpressionSyntaxError(expression, str(e)) from e
+        expr_tree = self._build_expression_tree(tree.body)
+        logger.info(f"Parsed Expression Tree:\n{expr_tree}")
 
-            result = ParsedExpression(
-                expression_tree=expr_tree,
-                original_expression=expression
-            )
+        return expr_tree
 
-            return result
-        except Exception as e:
-            raise ValueError(f"Invalid expression: {expression}. Error: {str(e)}")
-
-    def _build_expression_tree(self, node, level: int = 0) -> Union[ExpressionNode, float]:
+    def _build_expression_tree(self, node) -> ExpressionNode | float | int:
         if isinstance(node, ast.BinOp):
-            op_symbol = self._get_operator_symbol(node.op)
+            op_symbol = self.OPERATORS.get(type(node.op))
+            if op_symbol is None:
+                raise UnsupportedOperatorError(str(type(node.op).__name__))
 
-            if op_symbol not in self.OPERATORS:
-                raise ValueError(f"Unsupported operator: {op_symbol}")
+            left = self._build_expression_tree(node.left)
+            right = self._build_expression_tree(node.right)
 
-            left = self._build_expression_tree(node.left, level + 1)
-            right = self._build_expression_tree(node.right, level + 1)
+            return ExpressionNode(operation=op_symbol, left=left, right=right)
 
-            result = ExpressionNode(
-                operation=self.OPERATORS[op_symbol],
-                left=left,
-                right=right,
-                level=level
-            )
+        if isinstance(node, ast.Constant):
+            return node.value
 
-            return result
+        if not isinstance(node, ast.UnaryOp):
+            raise UnsupportedNodeError(type(node).__name__)
 
-        elif isinstance(node, ast.Constant):
-            value = float(node.value)
-            return value
-        elif isinstance(node, ast.UnaryOp):
-            if isinstance(node.op, ast.USub):
-                operand = self._build_expression_tree(node.operand, level)
-                if isinstance(operand, (int, float)):
-                    return -operand
-                else:
-                    raise ValueError("Unary subtraction on complex expression is not supported")
-            else:
-                raise ValueError(f"Unsupported unary operator: {type(node.op)}")
+        if not isinstance(node.op, ast.USub):
+            raise UnsupportedUnaryOperatorError(type(node.op).__name__)
+
+        operand = self._build_expression_tree(node.operand)
+        if isinstance(operand, (int, float)):
+            return -operand
         else:
-            logger.error(f"Unsupported node type: {type(node)}")
-            raise ValueError(f"Unsupported node type: {type(node)}")
+            return ExpressionNode(operation=OperationEnum.SUB, left=0, right=operand)
+
 
     def _clean_expression(self, expression: str) -> str:
-        clean = re.sub(r'\s+', '', expression)
+        clean = REGEX_SPACES.sub("", expression)
+        if not clean:
+            raise ExpressionSyntaxError(expression, "Expression cannot be empty")
 
-        if not re.match(r'^[0-9+*/().%-]+$', clean):
-            raise ValueError("Expression contains invalid characters")
+        if not REGEX_VALID_CHARACTERS.match(clean):
+            raise ExpressionSyntaxError(
+                expression, "Expression contains invalid characters"
+            )
         return clean
-
-    def _get_operator_symbol(self, op) -> str:
-        op_map = {
-            ast.Add: '+',
-            ast.Sub: '-',
-            ast.Mult: '*',
-            ast.Div: '/'
-        }
-        symbol = op_map.get(type(op), '?')
-        return symbol
-
-    def _log_tree_structure(self, tree: Union[ExpressionNode, float], prefix: str = "", is_last: bool = True,
-                            depth: int = 0):
-        if depth == 0:
-            logger.info("EXPRESSION TREE STRUCTURE:")
-            logger.info("=" * 50)
-
-        if isinstance(tree, ExpressionNode):
-            connector = "└── " if is_last else "├── "
-            logger.info(f"{prefix}{connector}[{tree.operation.upper()}] (Level: {tree.level})")
-
-            child_prefix = prefix + ("    " if is_last else "│   ")
-
-            if isinstance(tree.left, ExpressionNode):
-                self._log_tree_structure(tree.left, child_prefix, False, depth + 1)
-            else:
-                logger.info(f"{child_prefix}├── {tree.left} (leaf)")
-
-            if isinstance(tree.right, ExpressionNode):
-                self._log_tree_structure(tree.right, child_prefix, True, depth + 1)
-            else:
-                logger.info(f"{child_prefix}└── {tree.right} (leaf)")
-        else:
-            connector = "└── " if is_last else "├── "
-            logger.info(f"{prefix}{connector}{tree} (leaf)")
-
-        if depth == 0:
-            logger.info("=" * 50)
