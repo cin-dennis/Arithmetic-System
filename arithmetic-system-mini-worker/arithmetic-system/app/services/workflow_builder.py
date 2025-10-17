@@ -110,6 +110,7 @@ class WorkflowBuilder:
         flatten_commutative_nodes = self._flatten_commutative_operands(
             node, node.operation
         )
+        logger.info(f"Flattened nodes: {flatten_commutative_nodes}")
         child_workflows = [
             self._build_recursive(sub_node) for sub_node in flatten_commutative_nodes
         ]
@@ -124,9 +125,10 @@ class WorkflowBuilder:
         return self._handle_multiple_tasks(node, tasks, constants)
 
     def _split_tasks_and_constants(
-            self, workflows: list[Node | int | float]
+        self,
+        workflows: list[Node | Chain | Chord | int | float]
     ) -> tuple[list[Node], list[int | float]]:
-        tasks = [w for w in workflows if isinstance(w, Node)]
+        tasks = [w for w in workflows if isinstance(w, Node | Chain | Chord)]
         constants = [w for w in workflows if isinstance(w, (int, float))]
         return tasks, constants
 
@@ -134,6 +136,8 @@ class WorkflowBuilder:
         self,
         node: ExpressionNode, constants, identity
     ) -> Chain | float:
+        logger.info(f"Handling No Tasks: Constants: {constants}")
+
         num_constants = len(constants)
         if num_constants == 0:
             return identity
@@ -158,10 +162,14 @@ class WorkflowBuilder:
     def _handle_single_task(
         self,
         node: ExpressionNode,
-        tasks, constants
+        tasks: list[Node],
+        constants: list[int | float]
     ) -> Node | Chain | Chord | float:
+
         task = tasks[0]
         num_constants = len(constants)
+
+        logger.info(f"Handling Tasks: {tasks}, Constants: {constants}")
 
         if not constants:
             return task
@@ -187,8 +195,10 @@ class WorkflowBuilder:
     def _handle_multiple_tasks(
         self,
         node: ExpressionNode,
-        tasks, constants
+        tasks: list[Node | Chain | Chord],
+        constants: list[int | float]
     ) -> Chord:
+        logger.info(f"Handling Multiple Tasks: {tasks}, Constants: {constants}")
         num_constants = len(constants)
 
         if num_constants == 1:
