@@ -1,8 +1,5 @@
-import asyncio
 from mini.worker.workers import Worker
 from ..models.worker_models import BinaryOperationInput, NumberOutput
-from ..config import BROKER, RESULT_BACKEND
-from ..constants.constants import DIV_TASKS_TOPIC
 
 class DivWorker(Worker[BinaryOperationInput, NumberOutput]):
     Input = BinaryOperationInput
@@ -24,11 +21,3 @@ class DivWorker(Worker[BinaryOperationInput, NumberOutput]):
 
     async def sent_result(self, topic: str, input_obj: NumberOutput) -> None:
         pass
-
-async def main():
-
-    div_worker = DivWorker(BROKER, DIV_TASKS_TOPIC, RESULT_BACKEND)
-    await div_worker.arun()
-
-if __name__ == "__main__":
-    asyncio.run(main())

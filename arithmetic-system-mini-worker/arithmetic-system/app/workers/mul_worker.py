@@ -1,8 +1,5 @@
-import asyncio
 from mini.worker.workers import Worker
 from ..models.worker_models import BinaryOperationInput, NumberOutput
-from ..config import BROKER, RESULT_BACKEND
-from ..constants.constants import MUL_TASKS_TOPIC
 
 class MulWorker(Worker[BinaryOperationInput, NumberOutput]):
     Input = BinaryOperationInput
@@ -26,11 +23,3 @@ class MulWorker(Worker[BinaryOperationInput, NumberOutput]):
 
     async def sent_result(self, topic: str, input_obj: NumberOutput) -> None:
         pass
-
-async def main():
-
-    mul_worker = MulWorker(BROKER, MUL_TASKS_TOPIC, RESULT_BACKEND)
-    await mul_worker.arun()
-
-if __name__ == "__main__":
-    asyncio.run(main())

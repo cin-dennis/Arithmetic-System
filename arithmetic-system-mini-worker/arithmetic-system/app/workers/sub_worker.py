@@ -1,7 +1,4 @@
-import asyncio
 from ..models.worker_models import BinaryOperationInput, NumberOutput
-from ..config import BROKER, RESULT_BACKEND
-from ..constants.constants import SUB_TASKS_TOPIC
 from mini.worker.workers import Worker
 
 class SubWorker(Worker[BinaryOperationInput, NumberOutput]):
@@ -24,10 +21,3 @@ class SubWorker(Worker[BinaryOperationInput, NumberOutput]):
 
     async def sent_result(self, topic: str, input_obj: NumberOutput) -> None:
         pass
-
-async def main():
-    sub_worker = SubWorker(BROKER, SUB_TASKS_TOPIC, RESULT_BACKEND)
-    await sub_worker.arun()
-
-if __name__ == "__main__":
-    asyncio.run(main())

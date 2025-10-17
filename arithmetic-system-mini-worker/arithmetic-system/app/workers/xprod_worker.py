@@ -1,10 +1,5 @@
-import asyncio
-from math import prod
-
 from mini.worker.workers import Worker
 from ..models.worker_models import AggregateInput, NumberOutput
-from ..config import BROKER, RESULT_BACKEND
-from ..constants.constants import XPROD_TASKS_TOPIC
 
 class XProdWorker(Worker[AggregateInput, NumberOutput]):
     Input = AggregateInput
@@ -29,11 +24,3 @@ class XProdWorker(Worker[AggregateInput, NumberOutput]):
 
     async def sent_result(self, topic: str, input_obj: NumberOutput) -> None:
         pass
-
-async def main():
-    xprod_worker = XProdWorker(BROKER, XPROD_TASKS_TOPIC, RESULT_BACKEND)
-    await xprod_worker.arun()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
