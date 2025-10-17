@@ -18,10 +18,8 @@ class MulWorker(Worker[BinaryOperationInput, NumberOutput]):
         pass
 
     async def process(self, input_obj: BinaryOperationInput) -> NumberOutput:
-        if input_obj.result is not None:
-            result = input_obj.result * input_obj.y
-        else:
-            result = input_obj.x * input_obj.y
+        result = input_obj.x * input_obj.y
+        print(f"ADD: {input_obj.x} * {input_obj.y} = {result}")
         return NumberOutput(result=result)
 
     async def sent_result(self, topic: str, input_obj: NumberOutput) -> None:

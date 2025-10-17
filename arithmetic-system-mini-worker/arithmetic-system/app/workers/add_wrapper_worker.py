@@ -2,7 +2,7 @@ from mini.worker.workers import Worker
 from ..models.worker_models import ChainLinkInput, NumberOutput
 from ..config import BROKER, RESULT_BACKEND
 import asyncio
-from ..constants import ADD_TASKS_TOPIC
+from ..constants import ADD_TASKS_WRAPPER_TOPIC
 
 class AddWrapperWorker(Worker[ChainLinkInput, NumberOutput]):
     Input = ChainLinkInput
@@ -26,7 +26,7 @@ class AddWrapperWorker(Worker[ChainLinkInput, NumberOutput]):
 if __name__ == "__main__":
     worker = AddWrapperWorker(
         broker=BROKER,
-        topic=ADD_TASKS_TOPIC,
+        topic=ADD_TASKS_WRAPPER_TOPIC,
         result_backend=RESULT_BACKEND,
     )
     asyncio.run(worker.arun())

@@ -5,7 +5,8 @@ from ..models.worker_models import BinaryOperationInput, AggregateInput, ChordCa
 from ..constants.constants import (
     OperationEnum,
     OPERATION_TOPIC_MAP,
-    AGGREGATOR_TOPIC_MAP
+    AGGREGATOR_TOPIC_MAP,
+    OPERATION_WRAPPER_TOPIC_MAP
 )
 
 logger = logging.getLogger(__name__)
@@ -63,7 +64,7 @@ class WorkflowBuilder:
         if not is_left_constant and is_right_constant:
             op_input = ChainLinkInput(next_operand=right_workflow, is_left_fixed=False)
             op_node = Node(
-                topic=OPERATION_TOPIC_MAP[node.operation],
+                topic=OPERATION_WRAPPER_TOPIC_MAP[node.operation],
                 input=op_input.model_dump_json()
             )
             return Chain(nodes=[left_workflow, op_node])
@@ -72,7 +73,7 @@ class WorkflowBuilder:
         if is_left_constant and not is_right_constant:
             op_input = ChainLinkInput(next_operand=left_workflow, is_left_fixed=True)
             op_node = Node(
-                topic=OPERATION_TOPIC_MAP[node.operation],
+                topic=OPERATION_WRAPPER_TOPIC_MAP[node.operation],
                 input=op_input.model_dump_json()
             )
             return Chain(nodes=[right_workflow, op_node])
@@ -164,7 +165,7 @@ class WorkflowBuilder:
         if num_constants == 1:
             task_input = ChainLinkInput(next_operand=constants[0], is_left_fixed=False)
             op_task = Node(
-                topic=OPERATION_TOPIC_MAP[node.operation],
+                topic=OPERATION_WRAPPER_TOPIC_MAP[node.operation],
                 input=task_input.model_dump_json(),
             )
             return Chain(nodes=[task, op_task])
@@ -188,7 +189,7 @@ class WorkflowBuilder:
             const = constants[0]
             task_input = ChainLinkInput(next_operand=const, is_left_fixed=False)
             op_task = Node(
-                topic=OPERATION_TOPIC_MAP[node.operation],
+                topic=OPERATION_WRAPPER_TOPIC_MAP[node.operation],
                 input=task_input.model_dump_json(),
             )
 
