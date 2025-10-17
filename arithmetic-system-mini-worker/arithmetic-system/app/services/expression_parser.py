@@ -77,9 +77,6 @@ class ExpressionParser:
         ast.Div: OperationEnum.DIV,
     }
 
-    def __init__(self):
-        self.operations = []
-
     def parse(self, expression: str) -> ExpressionNode | float | int:
         clean_expr = self._clean_expression(expression)
         try:
