@@ -1,6 +1,8 @@
 from mini.worker.workers import Worker
 from ..models.worker_models import ChainLinkInput, NumberOutput
-
+from ..config import BROKER, RESULT_BACKEND
+import asyncio
+from ..constants import DIV_TASKS_TOPIC
 
 class DivWrapperWorker(Worker[ChainLinkInput, NumberOutput]):
     Input = ChainLinkInput
@@ -29,3 +31,11 @@ class DivWrapperWorker(Worker[ChainLinkInput, NumberOutput]):
 
     async def on_failure(self, input_obj: ChainLinkInput, exc: Exception) -> None:
         print(f"[DIV_WRAPPER] Failed: {exc}")
+
+if __name__ == "__main__":
+    worker = DivWrapperWorker(
+        broker=BROKER,
+        topic=DIV_TASKS_TOPIC,
+        result_backend=RESULT_BACKEND,
+    )
+    asyncio.run(worker.arun())

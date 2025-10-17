@@ -1,4 +1,3 @@
-from typing import Union, List
 from .expression_parser import ExpressionNode
 import logging
 from mini.worker.workers.canvas import Node, Chain, Chord
@@ -14,18 +13,17 @@ logger = logging.getLogger(__name__)
 
 class WorkflowBuilder:
     def build(
-            self,
-            expression_tree:
-            Union[ExpressionNode, float]
-    ) -> Chain | Chord | float:
+        self,
+        expression_tree:
+        ExpressionNode | int | float,
+    ) -> Chain | Chord | int | float:
         logger.info(f"Building {expression_tree}")
         return self._build_recursive(expression_tree)
 
     def _build_recursive(
             self,
-            node: Union[ExpressionNode,
-            float]
-    ) -> Node | Chain | Chord | float:
+            node: ExpressionNode | int | float,
+    ) -> Node | Chain | Chord | int | float:
         if isinstance(node, (int, float)):
             return float(node)
 
@@ -99,7 +97,7 @@ class WorkflowBuilder:
 
         return sub_commutative_expression
 
-    def _build_flat_workflow(self, node: ExpressionNode) -> Node | Chain | Chord | float:
+    def _build_flat_workflow(self, node: ExpressionNode) -> Node | Chain | Chord | int | float:
         flatten_commutative_nodes = self._flatten_commutative_operands(
             node, node.operation
         )

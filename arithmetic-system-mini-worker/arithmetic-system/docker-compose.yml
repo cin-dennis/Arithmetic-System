@@ -27,69 +27,88 @@ services:
     build: .
     command: python -m app.workers.add_worker
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_started
+      rabbitmq: { condition: service_healthy }
+      redis: { condition: service_started }
     restart: on-failure
 
   sub_worker:
     build: .
     command: python -m app.workers.sub_worker
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_started
+      rabbitmq: { condition: service_healthy }
+      redis: { condition: service_started }
     restart: on-failure
 
   mul_worker:
     build: .
     command: python -m app.workers.mul_worker
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_started
+      rabbitmq: { condition: service_healthy }
+      redis: { condition: service_started }
     restart: on-failure
 
   div_worker:
     build: .
     command: python -m app.workers.div_worker
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_started
+      rabbitmq: { condition: service_healthy }
+      redis: { condition: service_started }
     restart: on-failure
 
   xsum_worker:
     build: .
     command: python -m app.workers.xsum_worker
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_started
+      rabbitmq: { condition: service_healthy }
+      redis: { condition: service_started }
     restart: on-failure
 
   xprod_worker:
     build: .
     command: python -m app.workers.xprod_worker
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_started
+      rabbitmq: { condition: service_healthy }
+      redis: { condition: service_started }
+    restart: on-failure
+
+  add_wrapper_worker:
+    build: .
+    command: python -m app.workers.add_wrapper_worker
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+      redis: { condition: service_started }
+    restart: on-failure
+
+  sub_wrapper_worker:
+    build: .
+    command: python -m app.workers.sub_wrapper_worker
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+      redis: { condition: service_started }
+    restart: on-failure
+
+  mul_wrapper_worker:
+    build: .
+    command: python -m app.workers.mul_wrapper_worker
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+      redis: { condition: service_started }
+    restart: on-failure
+
+  div_wrapper_worker:
+    build: .
+    command: python -m app.workers.div_wrapper_worker
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+      redis: { condition: service_started }
     restart: on-failure
 
   entrypoint:
     build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_started
+      rabbitmq: { condition: service_healthy }
+      redis: { condition: service_started }
     restart: on-failure

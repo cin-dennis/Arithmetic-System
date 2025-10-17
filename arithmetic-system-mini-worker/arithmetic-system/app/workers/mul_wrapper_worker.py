@@ -1,6 +1,8 @@
 from mini.worker.workers import Worker
 from ..models.worker_models import ChainLinkInput, NumberOutput
-
+from ..config import BROKER, RESULT_BACKEND
+import asyncio
+from ..constants import MUL_TASKS_TOPIC
 
 class MulWrapperWorker(Worker[ChainLinkInput, NumberOutput]):
     Input = ChainLinkInput
@@ -19,3 +21,11 @@ class MulWrapperWorker(Worker[ChainLinkInput, NumberOutput]):
 
     async def on_failure(self, input_obj: ChainLinkInput, exc: Exception) -> None:
         print(f"[MUL_WRAPPER] Failed: {exc}")
+
+if __name__ == "__main__":
+    worker = MulWrapperWorker(
+        broker=BROKER,
+        topic=MUL_TASKS_TOPIC,
+        result_backend=RESULT_BACKEND,
+    )
+    asyncio.run(worker.arun())

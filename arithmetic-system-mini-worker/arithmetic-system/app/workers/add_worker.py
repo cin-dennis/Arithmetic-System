@@ -1,6 +1,9 @@
 from ..models.worker_models import BinaryOperationInput, NumberOutput
 import logging
 from mini.worker.workers import Worker
+from ..config import BROKER, RESULT_BACKEND
+import asyncio
+from ..constants import ADD_TASKS_TOPIC
 
 logger = logging.getLogger(__name__)
 
@@ -24,3 +27,12 @@ class AddWorker(Worker[BinaryOperationInput, NumberOutput]):
 
     async def sent_result(self, topic: str, input_obj: BinaryOperationInput) -> None:
         logger.info(f"Result sent to {topic}: {input_obj}")
+
+
+if __name__ == "__main__":
+    worker = AddWorker(
+        broker=BROKER,
+        topic=ADD_TASKS_TOPIC,
+        result_backend=RESULT_BACKEND,
+    )
+    asyncio.run(worker.arun())
