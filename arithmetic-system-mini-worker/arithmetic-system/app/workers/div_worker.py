@@ -21,7 +21,6 @@ class DivWorker(Worker[BinaryOperationInput, NumberOutput]):
         if input_obj.y == 0:
             raise ValueError("Division by zero")
         result = input_obj.x / input_obj.y
-        print(f"ADD: {input_obj.x} / {input_obj.y} = {result}")
         return NumberOutput(result=result)
 
     async def sent_result(self, topic: str, input_obj: NumberOutput) -> None:

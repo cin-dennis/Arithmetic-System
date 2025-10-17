@@ -22,7 +22,6 @@ class XProdWorker(Worker[AggregateInput, NumberOutput]):
         result = 1.0
         for val in numbers:
             result *= val
-        print(f"XPROD: prod({numbers}) = {result}")
         return NumberOutput(result=result)
 
     async def sent_result(self, topic: str, input_obj: NumberOutput) -> None:

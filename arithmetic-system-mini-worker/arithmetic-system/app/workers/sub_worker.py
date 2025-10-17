@@ -19,7 +19,6 @@ class SubWorker(Worker[BinaryOperationInput, NumberOutput]):
 
     async def process(self, input_obj: BinaryOperationInput) -> NumberOutput:
         result = input_obj.x - input_obj.y
-        print(f"SUB: {input_obj.x} - {input_obj.y} = {result}")
         return NumberOutput(result=result)
 
     async def sent_result(self, topic: str, input_obj: NumberOutput) -> None:

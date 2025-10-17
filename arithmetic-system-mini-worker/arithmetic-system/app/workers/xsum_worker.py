@@ -20,7 +20,6 @@ class XSumWorker(Worker[AggregateInput, NumberOutput]):
     async def process(self, input_obj: AggregateInput) -> NumberOutput:
         numbers = input_obj.numbers
         result = sum(numbers)
-        print(f"XSUM: sum({numbers}) = {result}")
         return NumberOutput(result=result)
 
     async def sent_result(self, topic: str, input_obj: NumberOutput) -> None:

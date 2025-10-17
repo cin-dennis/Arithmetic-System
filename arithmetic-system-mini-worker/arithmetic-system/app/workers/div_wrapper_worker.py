@@ -3,6 +3,9 @@ from ..models.worker_models import ChainLinkInput, NumberOutput
 from ..config import BROKER, RESULT_BACKEND
 import asyncio
 from ..constants import DIV_TASKS_WRAPPER_TOPIC
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DivWrapperWorker(Worker[ChainLinkInput, NumberOutput]):
     Input = ChainLinkInput
@@ -24,13 +27,13 @@ class DivWrapperWorker(Worker[ChainLinkInput, NumberOutput]):
         return NumberOutput(result=result)
 
     async def before_start(self, input_obj: ChainLinkInput) -> None:
-        print(f"[DIV_WRAPPER] Starting: {input_obj}")
+        logger.info(f"[DIV_WRAPPER] Starting: {input_obj}")
 
     async def on_success(self, input_obj: ChainLinkInput, result: NumberOutput) -> None:
-        print(f"[DIV_WRAPPER] Success: {result.result}")
+        logger.info(f"[DIV_WRAPPER] Success: {result.result}")
 
     async def on_failure(self, input_obj: ChainLinkInput, exc: Exception) -> None:
-        print(f"[DIV_WRAPPER] Failed: {exc}")
+        logger.info(f"[DIV_WRAPPER] Failed: {exc}")
 
 if __name__ == "__main__":
     worker = DivWrapperWorker(
