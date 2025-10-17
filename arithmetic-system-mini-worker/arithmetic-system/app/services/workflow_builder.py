@@ -17,8 +17,10 @@ class WorkflowBuilder:
         expression_tree:
         ExpressionNode | int | float,
     ) -> Chain | Chord | int | float:
-        logger.info(f"Building {expression_tree}")
-        return self._build_recursive(expression_tree)
+        workflow_object = self._build_recursive(expression_tree)
+        if isinstance(workflow_object, Node):
+            return Chain(nodes=[workflow_object])
+        return workflow_object
 
     def _build_recursive(
             self,
