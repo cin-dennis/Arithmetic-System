@@ -11,7 +11,6 @@ from app.workers import (
 
 from .expression_parser import ExpressionParser, OperationEnum
 from .workflow_builder import WorkflowBuilder
-from app.models.models import CalculateExpressionResponse
 from typing import Callable
 
 logger = logging.getLogger(__name__)

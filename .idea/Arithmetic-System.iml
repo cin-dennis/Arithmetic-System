@@ -3,6 +3,8 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/arithmetic-system-celery" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/arithmetic-system-mini-worker" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/arithmetic-system-celery/arithmetic-system/venv" />
       <excludeFolder url="file://$MODULE_DIR$/arithmetic-system/venv" />
       <excludeFolder url="file://$MODULE_DIR$/arithmetic-system-mini-worker/arithmetic-system/venv" />
