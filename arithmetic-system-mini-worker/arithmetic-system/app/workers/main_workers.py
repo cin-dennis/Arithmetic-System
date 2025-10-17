@@ -20,7 +20,7 @@ from . import (
 )
 
 
-async def start_all_workers():
+async def start_all_workers() -> None:
     add_worker = AddWorker(BROKER, ADD_TASKS_TOPIC, RESULT_BACKEND)
     sub_worker = SubWorker(BROKER, SUB_TASKS_TOPIC, RESULT_BACKEND)
     mul_worker = MulWorker(BROKER, MUL_TASKS_TOPIC, RESULT_BACKEND)
