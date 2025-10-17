@@ -140,7 +140,7 @@ class WorkflowBuilder:
         if num_constants == 1:
             return constants[0]
         if num_constants == 2:
-            task_input = BinaryOperationInput(x=node.left, y=node.right)
+            task_input = BinaryOperationInput(x=constants[0], y=constants[1])
             node = Node(
                 topic=OPERATION_TOPIC_MAP[node.operation],
                 input=task_input.model_dump_json(),
