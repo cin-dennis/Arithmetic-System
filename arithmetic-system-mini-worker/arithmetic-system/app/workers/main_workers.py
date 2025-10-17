@@ -16,7 +16,10 @@ from . import (
     DivWorker,
     XSumWorker,
     XProdWorker,
-    AddWrapperWorker
+    AddWrapperWorker,
+    SubWrapperWorker,
+    MulWrapperWorker,
+    DivWrapperWorker
 )
 
 
@@ -29,6 +32,9 @@ async def start_all_workers() -> None:
     xprod_worker = XProdWorker(BROKER, XPROD_TASKS_TOPIC, RESULT_BACKEND)
 
     add_wrapper = AddWrapperWorker(BROKER, ADD_TASKS_TOPIC, RESULT_BACKEND)
+    sub_wrapper = SubWrapperWorker(BROKER, SUB_TASKS_TOPIC, RESULT_BACKEND)
+    mul_wrapper = MulWrapperWorker(BROKER, MUL_TASKS_TOPIC, RESULT_BACKEND)
+    div_wrapper = DivWrapperWorker(BROKER, DIV_TASKS_TOPIC, RESULT_BACKEND)
 
 
     await asyncio.gather(
@@ -39,6 +45,9 @@ async def start_all_workers() -> None:
         xsum_worker.arun(),
         xprod_worker.arun(),
         add_wrapper.arun(),
+        sub_wrapper.arun(),
+        mul_wrapper.arun(),
+        div_wrapper.arun(),
     )
 
 

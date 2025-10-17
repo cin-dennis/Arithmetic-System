@@ -6,6 +6,9 @@ from .div_worker import DivWorker
 from .xsum_worker import XSumWorker
 from .xprod_worker import XProdWorker
 from .add_wrapper_worker import AddWrapperWorker
+from .sub_wrapper_worker import SubWrapperWorker
+from .div_wrapper_worker import DivWrapperWorker
+from .mul_wrapper_worker import MulWrapperWorker
 
 __all__ = [
     "AddWorker",
@@ -15,4 +18,7 @@ __all__ = [
     "XSumWorker",
     "XProdWorker",
     "AddWrapperWorker",
+    "SubWrapperWorker",
+    "DivWrapperWorker",
+    "MulWrapperWorker",
 ]
