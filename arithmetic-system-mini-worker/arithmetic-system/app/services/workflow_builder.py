@@ -133,7 +133,7 @@ class WorkflowBuilder:
     def _handle_no_tasks(
         self,
         node: ExpressionNode, constants, identity
-    ) -> Node | float:
+    ) -> Chain | float:
         num_constants = len(constants)
         if num_constants == 0:
             return identity
@@ -141,16 +141,19 @@ class WorkflowBuilder:
             return constants[0]
         if num_constants == 2:
             task_input = BinaryOperationInput(x=node.left, y=node.right)
-            return Node(
+            node = Node(
                 topic=OPERATION_TOPIC_MAP[node.operation],
                 input=task_input.model_dump_json(),
             )
+            return Chain(nodes=[node])
 
         aggregate_input = AggregateInput(values=constants)
-        return Node(
+        node = Node(
             topic=AGGREGATOR_TOPIC_MAP[node.operation],
             input=aggregate_input.model_dump_json(),
         )
+
+        return Chain(nodes=[node])
 
     def _handle_single_task(
         self,
@@ -175,8 +178,11 @@ class WorkflowBuilder:
             topic=AGGREGATOR_TOPIC_MAP[node.operation],
             input=aggregate_input.model_dump_json(),
         )
+        call_back_aggregate_task = Node(
+            topic=AGGREGATOR_TOPIC_MAP[node.operation],
+        )
         tasks.append(aggregate_task)
-        return Chord(nodes=tasks, callback=aggregate_task)
+        return Chord(nodes=tasks, callback=call_back_aggregate_task)
 
     def _handle_multiple_tasks(
         self,
@@ -193,10 +199,8 @@ class WorkflowBuilder:
                 input=task_input.model_dump_json(),
             )
 
-            aggregate_input = ChordCallbackInput()
             aggregate_task = Node(
                 topic=AGGREGATOR_TOPIC_MAP[node.operation],
-                input=aggregate_input.model_dump_json(),
             )
             chain = Chain(nodes=[aggregate_task, op_task])
             return Chord(nodes=tasks, callback=chain)
@@ -209,10 +213,8 @@ class WorkflowBuilder:
             )
             tasks.append(aggregate_task)
 
-        aggregate_input = ChordCallbackInput()
         aggregate_task = Node(
             topic=AGGREGATOR_TOPIC_MAP[node.operation],
-            input=aggregate_input.model_dump_json(),
         )
         return Chord(nodes=tasks, callback=aggregate_task)
 
