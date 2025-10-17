@@ -9,7 +9,7 @@ class SubWrapperWorker(Worker[ChainLinkInput, NumberOutput]):
     Output = NumberOutput
 
     async def process(self, input_obj: ChainLinkInput) -> NumberOutput:
-        if input_obj.is_left_fixed:
+        if not input_obj.is_left_fixed:
             result = input_obj.result - input_obj.next_operand
         else:
             result = input_obj.next_operand - input_obj.result
