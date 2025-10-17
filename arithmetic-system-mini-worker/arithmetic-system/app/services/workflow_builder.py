@@ -1,7 +1,7 @@
 from .expression_parser import ExpressionNode
 import logging
 from mini.worker.workers.canvas import Node, Chain, Chord
-from ..models.worker_models import BinaryOperationInput, AggregateInput, ChordCallbackInput, ChainLinkInput
+from ..models.worker_models import BinaryOperationInput, AggregateInput, ChainLinkInput
 from ..constants.constants import (
     OperationEnum,
     OPERATION_TOPIC_MAP,
